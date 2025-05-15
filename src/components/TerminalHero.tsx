@@ -3,7 +3,13 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useChatSheet } from "@/context/ChatSheetContext";
-import { FaTwitter, FaTelegram, FaLinkedin, FaInstagram, FaTiktok } from "react-icons/fa";
+import {
+  FaTwitter,
+  FaTelegram,
+  FaLinkedin,
+  FaInstagram,
+  FaTiktok,
+} from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,12 +22,12 @@ interface TerminalLine {
   timestamp: string;
 }
 
-const TypeWriter = ({ 
-  text, 
+const TypeWriter = ({
+  text,
   className,
-  onClick 
-}: { 
-  text: string; 
+  onClick,
+}: {
+  text: string;
   className: string;
   onClick?: () => void;
 }) => {
@@ -39,8 +45,8 @@ const TypeWriter = ({
     if (currentIndex < text.length) {
       const char = text[currentIndex];
       const timeout = setTimeout(() => {
-        setDisplayedText(prev => prev + char);
-        setCurrentIndex(c => c + 1);
+        setDisplayedText((prev) => prev + char);
+        setCurrentIndex((c) => c + 1);
         if (currentIndex === text.length - 1) {
           setIsComplete(true);
         }
@@ -51,12 +57,213 @@ const TypeWriter = ({
   }, [currentIndex, text]);
 
   return (
-    <div className={className} onClick={onClick} style={onClick ? { cursor: 'pointer' } : undefined}>
+    <div
+      className={className}
+      onClick={onClick}
+      style={onClick ? { cursor: "pointer" } : undefined}
+    >
       {displayedText}
       {!isComplete && (
         <span className="inline-block w-2 h-4 ml-1 bg-white/80 animate-pulse" />
       )}
     </div>
+  );
+};
+
+// Componente del teléfono móvil para mostrar video
+const MobileVideoDisplay = ({
+  show,
+  videoUrl,
+}: {
+  show: boolean;
+  videoUrl: string;
+}) => {
+  return (
+    <motion.div
+      className="fixed inset-0 z-30 items-center justify-end pr-[20%] pointer-events-none hidden md:flex"
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: show ? 1 : 0,
+        transition: {
+          duration: 0.7,
+          ease: [0.16, 1, 0.3, 1],
+          delay: show ? 0.3 : 0,
+        },
+      }}
+    >
+      {/* Contenedor para la animación de entrada desde la derecha */}
+      <motion.div
+        initial={{ x: 300 }}
+        animate={{
+          x: show ? 0 : 300,
+          transition: {
+            duration: 0.7,
+            ease: [0.16, 1, 0.3, 1],
+            delay: show ? 0.3 : 0,
+          },
+        }}
+      >
+        {/* Dispositivo móvil */}
+        <div className="relative w-[320px] h-[650px] rounded-[40px] overflow-hidden shadow-2xl bg-gray-900 border-[8px] border-gray-800">
+          {/* Notch del teléfono */}
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[140px] h-[30px] bg-gray-900 rounded-b-[16px] z-20"></div>
+
+          {/* Barra de estado */}
+          <div className="w-full h-[35px] bg-gray-900 flex justify-between items-center text-white text-sm px-6 z-10 relative">
+            <span>
+              {new Date().toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            <div className="flex space-x-1 items-center">
+              <div className="h-2.5 w-2.5 rounded-full bg-green-500"></div>
+              <div className="h-4 w-4 text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M19.44,13H17.37a1.09,1.09,0,0,0-1.09,1.09h0a1.09,1.09,0,0,0,1.09,1.09h2.06A1.09,1.09,0,0,0,20.53,14h0A1.09,1.09,0,0,0,19.44,13Z"></path>
+                  <path d="M17.2,8.18H19a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,19,6H17.2a1.09,1.09,0,0,0-1.09,1.09h0A1.09,1.09,0,0,0,17.2,8.18Z"></path>
+                  <path d="M19.44,16.94H17.37a1.09,1.09,0,0,0-1.09,1.09h0a1.09,1.09,0,0,0,1.09,1.09h2.06a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,19.44,16.94Z"></path>
+                  <path d="M8.41,6H6.59A1.09,1.09,0,0,0,5.5,7.09H5.5A1.09,1.09,0,0,0,6.59,8.18H8.41A1.09,1.09,0,0,0,9.5,7.09H9.5A1.09,1.09,0,0,0,8.41,6Z"></path>
+                  <path d="M8.41,13H6.59a1.09,1.09,0,0,0-1.09,1.09H5.5A1.09,1.09,0,0,0,6.59,15.18H8.41a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,8.41,13Z"></path>
+                  <path d="M8.41,16.94H6.59a1.09,1.09,0,0,0-1.09,1.09H5.5a1.09,1.09,0,0,0,1.09,1.09H8.41a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,8.41,16.94Z"></path>
+                  <rect
+                    width="5.82"
+                    height="3.27"
+                    x="9.09"
+                    y="5.91"
+                    rx="1.09"
+                    ry="1.09"
+                  ></rect>
+                  <rect
+                    width="5.82"
+                    height="3.27"
+                    x="9.09"
+                    y="13"
+                    rx="1.09"
+                    ry="1.09"
+                  ></rect>
+                  <rect
+                    width="5.82"
+                    height="3.27"
+                    x="9.09"
+                    y="16.94"
+                    rx="1.09"
+                    ry="1.09"
+                  ></rect>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Banner del ganador */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 py-2 px-4 flex items-center justify-between">
+            <div>
+              <p className="text-white text-xs opacity-70">Last winner</p>
+              <p className="text-white text-sm font-bold">CryptoProject.eth</p>
+            </div>
+            <div className="flex space-x-2">
+              <a
+                href="#"
+                className="bg-white/10 p-1.5 rounded-full hover:bg-white/20 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-white"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="bg-white/10 p-1.5 rounded-full hover:bg-white/20 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Video */}
+          <div className="h-full w-full bg-black pt-0">
+            <div className="relative h-full w-full overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <video
+                  src={videoUrl}
+                  className="h-full w-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              </div>
+
+              {/* Controles superpuestos */}
+              <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between items-center bg-gradient-to-t from-black/70 to-transparent text-white">
+                <div>
+                  <span className="text-sm font-medium">Video promocional</span>
+                  <p className="text-xs opacity-70">Subasta: 3.24 ETH</p>
+                </div>
+                <div className="flex space-x-3">
+                  <button className="bg-white/20 rounded-full p-1.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                  </button>
+                  <button className="bg-white/20 rounded-full p-1.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Botón circular en parte inferior */}
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-[50px] h-[5px] bg-white/30 rounded-full"></div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -71,6 +278,7 @@ const TerminalHero = () => {
   const router = useRouter();
   const [isAuctionOpen, setIsAuctionOpen] = useState(false);
   const [currentBid, setCurrentBid] = useState("0.00");
+  const [showMobileVideo, setShowMobileVideo] = useState(false);
 
   const bannerLines2 = [
     "  /******   /******  /**   /**",
@@ -84,32 +292,29 @@ const TerminalHero = () => {
   ];
 
   const bannerLines3 = [
-"                                        /$$                     /$$   /$$ /$$$$$$$  /$$$$$$$$",
-"                                       |__/                    | $$  / $$| $$__  $$|__  $$__/",
-"       /$$  /$$$$$$   /$$$$$$$ /$$$$$$$ /$$  /$$$$$$$  /$$$$$$ |  $$/ $$/| $$    $$   | $$",   
-"      |__/ /$$__  $$ /$$_____//$$_____/| $$ /$$_____/ |____  $$    $$$$/ | $$$$$$$    | $$",   
-"       /$$| $$$$$$$$|  $$$$$$|  $$$$$$ | $$| $$        /$$$$$$$  >$$  $$ | $$__  $$   | $$",   
-"      | $$| $$_____/   _____ $$ ____ $$| $$| $$       /$$__  $$ /$$/   $$| $$    $$   | $$",   
-"      | $$|  $$$$$$$ /$$$$$$$//$$$$$$$/| $$|  $$$$$$$|  $$$$$$$| $$    $$| $$$$$$$/   | $$",   
-"      | $$|  _______/|_______/|_______/|__/  _______/  _______/|__/  |__/|_______/    |__/",   
-" /$$  | $$|",                                                                                   
-"|   $$$$$$/",                                                                                   
-"   ______/",                                                                                                                         
-];
+    "                                        /$$                     /$$   /$$ /$$$$$$$  /$$$$$$$$",
+    "                                       |__/                    | $$  / $$| $$__  $$|__  $$__/",
+    "       /$$  /$$$$$$   /$$$$$$$ /$$$$$$$ /$$  /$$$$$$$  /$$$$$$ |  $$/ $$/| $$    $$   | $$",
+    "      |__/ /$$__  $$ /$$_____//$$_____/| $$ /$$_____/ |____  $$    $$$$/ | $$$$$$$    | $$",
+    "       /$$| $$$$$$$$|  $$$$$$|  $$$$$$ | $$| $$        /$$$$$$$  >$$  $$ | $$__  $$   | $$",
+    "      | $$| $$_____/   _____ $$ ____ $$| $$| $$       /$$__  $$ /$$/   $$| $$    $$   | $$",
+    "      | $$|  $$$$$$$ /$$$$$$$//$$$$$$$/| $$|  $$$$$$$|  $$$$$$$| $$    $$| $$$$$$$/   | $$",
+    "      | $$|  _______/|_______/|_______/|__/  _______/  _______/|__/  |__/|_______/    |__/",
+    " /$$  | $$|",
+    "|   $$$$$$/",
+    "   ______/",
+  ];
 
-const bannerLines = [
-"                                             /$$   /$$ /$$$$$$$  /$$$$$$$$",
-"                                            | $$  / $$| $$__  $$|__  $$__/",
-" /$$$$$$/$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ |  $$/ $$/| $$    $$   | $$   ",
-"| $$_  $$_  $$ /$$__  $$ /$$__  $$| $$__  $$    $$$$/ | $$$$$$$    | $$",   
-"| $$   $$   $$| $$    $$| $$    $$| $$    $$  >$$  $$ | $$__  $$   | $$",   
-"| $$ | $$ | $$| $$  | $$| $$  | $$| $$  | $$ /$$/   $$| $$    $$   | $$ ",  
-"| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",   
-"|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",                                                                                                                         
-];   
-                              
-                              
-                              
+  const bannerLines = [
+    "                                             /$$   /$$ /$$$$$$$  /$$$$$$$$",
+    "                                            | $$  / $$| $$__  $$|__  $$__/",
+    " /$$$$$$/$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ |  $$/ $$/| $$    $$   | $$   ",
+    "| $$_  $$_  $$ /$$__  $$ /$$__  $$| $$__  $$    $$$$/ | $$$$$$$    | $$",
+    "| $$   $$   $$| $$    $$| $$    $$| $$    $$  >$$  $$ | $$__  $$   | $$",
+    "| $$ | $$ | $$| $$  | $$| $$  | $$| $$  | $$ /$$/   $$| $$    $$   | $$ ",
+    "| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",
+    "|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",
+  ];
 
   const conversations = [
     {
@@ -118,8 +323,8 @@ const bannerLines = [
         "I will create a short video of your product and post it on X, Farcaster, Telegram, Tiktok and Instagram... ",
     },
     {
-    username: "agentbot",
-    message: "Everyday there's a new auction for tomorrow's video...",
+      username: "agentbot",
+      message: "Everyday there's a new auction for tomorrow's video...",
     },
     {
       username: "agentbot",
@@ -127,9 +332,9 @@ const bannerLines = [
         "Training knowledge... Unique personality... Connecting to data sources... ",
     },
     {
-    username: "agentbot",
-    message: "Deploying..."
-  }
+      username: "agentbot",
+      message: "Deploying...",
+    },
   ];
 
   const conversations2 = [
@@ -139,8 +344,9 @@ const bannerLines = [
         "Your custommer service, influencers or fans in your community, powered by Ai-agents that can chat like a human and use natural language to solve questions ",
     },
     {
-    username: "agentbot",
-    message: "Loading AI agent infrastructure... Monitoring agent Activity...",
+      username: "agentbot",
+      message:
+        "Loading AI agent infrastructure... Monitoring agent Activity...",
     },
     {
       username: "agentbot",
@@ -149,12 +355,13 @@ const bannerLines = [
     },
     {
       username: "agentbot",
-      message: "Connecting to X, Farcaster, Telegram, Website... Setting automations...",
+      message:
+        "Connecting to X, Farcaster, Telegram, Website... Setting automations...",
     },
     {
-    username: "agentbot",
-    message: "Deploying..."
-  }
+      username: "agentbot",
+      message: "Deploying...",
+    },
   ];
 
   const getTimestamp = () => {
@@ -168,11 +375,11 @@ const bannerLines = [
   };
 
   const handleKnowMore = () => {
-    router.push('/classic');
+    router.push("/classic");
   };
 
   const handleBidVideo = () => {
-    console.log('Opening auction sheet...');
+    console.log("Opening auction sheet...");
     setIsAuctionOpen(true);
   };
 
@@ -243,9 +450,24 @@ const bannerLines = [
     }
   }, [lines]);
 
+  // Mostrar teléfono móvil después de unos segundos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowMobileVideo(true);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="h-screen bg-[#1752F0] flex flex-col">
+    <div className="h-screen bg-[#1752F0] flex flex-col overflow-hidden">
       <div className="relative flex flex-1">
+        {/* Mobile Video Display */}
+        <MobileVideoDisplay
+          show={showMobileVideo}
+          videoUrl="/assets/moonxbt.mp4"
+        />
+
         {/* Terminal Content */}
         <div
           ref={terminalRef}
@@ -260,35 +482,63 @@ const bannerLines = [
           }}
         >
           {/* Scanline effect */}
-          <div 
-            className="absolute inset-0 pointer-events-none" 
+          <div
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(rgba(255,255,255,0.03) 50%, transparent 50%)',
-              backgroundSize: '100% 4px',
-              animation: 'scan 8s linear infinite'
+              background:
+                "linear-gradient(rgba(255,255,255,0.03) 50%, transparent 50%)",
+              backgroundSize: "100% 4px",
+              animation: "scan 8s linear infinite",
             }}
           />
 
           {/* Terminal content */}
           <div className="relative z-10">
             {lines.map((line, index) => (
-              <motion.div 
+              <motion.div
                 key={line.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`${line.username ? 'mb-2 sm:mb-3 leading-relaxed' : 'leading-none'}`}
+                className={`${
+                  line.username
+                    ? "mb-2 sm:mb-3 leading-relaxed"
+                    : "leading-none"
+                }`}
               >
                 {line.username && (
                   <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1 sm:mb-0">
-                    <span className="text-white/50 font-bold tracking-wider text-xs sm:text-sm">[{line.timestamp}]</span>
-                    <span className="text-white font-bold tracking-wider text-xs sm:text-sm">{line.username}:</span>
+                    <span className="text-white/50 font-bold tracking-wider text-xs sm:text-sm">
+                      [{line.timestamp}]
+                    </span>
+                    <span className="text-white font-bold tracking-wider text-xs sm:text-sm">
+                      {line.username}:
+                    </span>
                   </div>
                 )}
-                <TypeWriter 
+                <TypeWriter
                   text={line.message}
-                  className={`${!line.username ? 'font-bold text-white tracking-wider text-[8px] xs:text-[10px] sm:text-xs md:text-sm whitespace-pre cursor-pointer' : 'text-white/90 pl-0 sm:pl-4 text-xs sm:text-sm md:text-base break-words'} flex items-center ${line.message.includes('Current Bid:') ? 'text-blue-300 font-bold' : ''} ${line.message.includes('Click here') ? 'text-blue-200 animate-pulse' : ''}`}
-                  onClick={(!line.username && (line.message.includes('BID NOW') || line.message.includes('Current Bid:') || line.message.includes('Click here'))) ? handleBidVideo : undefined}
+                  className={`${
+                    !line.username
+                      ? "font-bold text-white tracking-wider text-[8px] xs:text-[10px] sm:text-xs md:text-sm whitespace-pre cursor-pointer"
+                      : "text-white/90 pl-0 sm:pl-4 text-xs sm:text-sm md:text-base break-words"
+                  } flex items-center ${
+                    line.message.includes("Current Bid:")
+                      ? "text-blue-300 font-bold"
+                      : ""
+                  } ${
+                    line.message.includes("Click here")
+                      ? "text-blue-200 animate-pulse"
+                      : ""
+                  }`}
+                  onClick={
+                    !line.username &&
+                    (line.message.includes("BID NOW") ||
+                      line.message.includes("Current Bid:") ||
+                      line.message.includes("Click here"))
+                      ? handleBidVideo
+                      : undefined
+                  }
                 />
               </motion.div>
             ))}
@@ -323,12 +573,14 @@ const bannerLines = [
           <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] gap-4 items-center py-4">
             {/* Left - Controls with modern styling */}
             <div className="flex justify-center sm:justify-start items-center">
-              <button 
+              <button
                 onClick={() => setIsPlaying(!isPlaying)}
                 className="group flex items-center space-x-3 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all duration-300"
               >
                 <div className="w-2 h-2 bg-white/70 rounded-full group-hover:bg-white group-hover:animate-pulse transition-all duration-300" />
-                <span className="text-white/70 group-hover:text-white font-mono text-sm tracking-wider transition-all duration-300">PAUSE</span>
+                <span className="text-white/70 group-hover:text-white font-mono text-sm tracking-wider transition-all duration-300">
+                  PAUSE
+                </span>
               </button>
             </div>
 
@@ -340,7 +592,9 @@ const bannerLines = [
               >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                 <div className="relative flex items-center space-x-3">
-                  <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">BID FOR TOMORROW'S VIDEO</span>
+                  <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
+                    BID FOR TOMORROW'S VIDEO
+                  </span>
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 </div>
               </button>
@@ -348,7 +602,12 @@ const bannerLines = [
 
             {/* R ight - Social Links with modern hover effects */}
             <div className="flex justify-center sm:justify-end items-center space-x-6">
-              <Link href="https://x.com/moonXBT_ai" target="_blank" rel="noopener noreferrer" className="group">
+              <Link
+                href="https://x.com/moonXBT_ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
                 <div className="relative">
                   <Image
                     src="/assets/x.png"
@@ -360,7 +619,12 @@ const bannerLines = [
                   <div className="absolute -bottom-1 left-1/2 w-4 h-0.5 bg-white transform -translate-x-1/2 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                 </div>
               </Link>
-              <Link href="https://warpcast.com/ai420z" target="_blank" rel="noopener noreferrer" className="group">
+              <Link
+                href="https://warpcast.com/ai420z"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
                 <div className="relative">
                   <Image
                     src="/assets/farcaster.png"
@@ -372,25 +636,45 @@ const bannerLines = [
                   <div className="absolute -bottom-1 left-1/2 w-4 h-0.5 bg-white transform -translate-x-1/2 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                 </div>
               </Link>
-              <Link href="https://www.tiktok.com/@moonxbt.fun" target="_blank" rel="noopener noreferrer" className="group">
+              <Link
+                href="https://www.tiktok.com/@moonxbt.fun"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
                 <div className="relative">
                   <FaTiktok className="w-5 h-5 text-white/70 group-hover:text-white transition-all duration-300 transform group-hover:scale-110 group-hover:-translate-y-0.5" />
                   <div className="absolute -bottom-1 left-1/2 w-4 h-0.5 bg-white transform -translate-x-1/2 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                 </div>
               </Link>
-              <Link href="https://t.me/A0X_Portal" target="_blank" rel="noopener noreferrer" className="group">
+              <Link
+                href="https://t.me/A0X_Portal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
                 <div className="relative">
                   <FaTelegram className="w-5 h-5 text-white/70 group-hover:text-white transition-all duration-300 transform group-hover:scale-110 group-hover:-translate-y-0.5" />
                   <div className="absolute -bottom-1 left-1/2 w-4 h-0.5 bg-white transform -translate-x-1/2 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                 </div>
               </Link>
-              <Link href="https://www.instagram.com/moonxbt_ia" target="_blank" rel="noopener noreferrer" className="group">
+              <Link
+                href="https://www.instagram.com/moonxbt_ia"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
                 <div className="relative">
                   <FaInstagram className="w-5 h-5 text-white/70 group-hover:text-white transition-all duration-300 transform group-hover:scale-110 group-hover:-translate-y-0.5" />
                   <div className="absolute -bottom-1 left-1/2 w-4 h-0.5 bg-white transform -translate-x-1/2 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                 </div>
               </Link>
-              <Link href="https://zora.co/@moonxbt" target="_blank" rel="noopener noreferrer" className="group">
+              <Link
+                href="https://zora.co/@moonxbt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
                 <div className="relative">
                   <Image
                     src="/assets/zora.png"
@@ -402,7 +686,12 @@ const bannerLines = [
                   <div className="absolute -bottom-1 left-1/2 w-4 h-0.5 bg-white transform -translate-x-1/2 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                 </div>
               </Link>
-              <Link href="https://dexscreener.com/base/0xa1a65c284a2e01f0d9c9683edeab30d0835d1362" target="_blank" rel="noopener noreferrer" className="group">
+              <Link
+                href="https://dexscreener.com/base/0xa1a65c284a2e01f0d9c9683edeab30d0835d1362"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
                 <div className="relative">
                   <Image
                     src="/assets/dexlogo.png"
@@ -419,18 +708,22 @@ const bannerLines = [
         </div>
       </div>
 
-      <VideoAuctionSheet 
-        isOpen={isAuctionOpen} 
+      <VideoAuctionSheet
+        isOpen={isAuctionOpen}
         onClose={() => {
-          console.log('Closing auction sheet...');
+          console.log("Closing auction sheet...");
           setIsAuctionOpen(false);
-        }} 
+        }}
       />
 
       <style jsx global>{`
         @keyframes scan {
-          from { transform: translateY(0); }
-          to { transform: translateY(4px); }
+          from {
+            transform: translateY(0);
+          }
+          to {
+            transform: translateY(4px);
+          }
         }
         @media (max-width: 640px) {
           .whitespace-pre {
@@ -454,9 +747,9 @@ const bannerLines = [
         }
 
         ::-webkit-scrollbar-thumb {
-          background: #1752F0;
+          background: #1752f0;
           border-radius: 4px;
-          border: 2px solid #00008B;
+          border: 2px solid #00008b;
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -466,11 +759,11 @@ const bannerLines = [
         /* Firefox */
         * {
           scrollbar-width: thin;
-          scrollbar-color: #1752F0 rgba(23, 82, 240, 0.1);
+          scrollbar-color: #1752f0 rgba(23, 82, 240, 0.1);
         }
       `}</style>
     </div>
   );
 };
 
-export default TerminalHero; 
+export default TerminalHero;
