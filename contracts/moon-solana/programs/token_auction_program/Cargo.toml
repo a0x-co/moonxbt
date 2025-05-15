@@ -1,0 +1,24 @@
+[package]
+name = "token_auction" # Renombrado para mayor claridad
+version = "0.1.0"
+description = "Anchor program for a token auction"
+edition = "2021" # Anchor generalmente usa 2021
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "token_auction_program" # Nombre de la biblioteca
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1" # Actualizado para coincidir con la CLI preferida
+anchor-spl = "0.31.1"  # Actualizado para coincidir con la CLI preferida
+# solana-program is re-exported by anchor-lang.
+spl-token = { version = "4.0.0", features = ["no-entrypoint"] } # Esta versión de spl-token debería ser compatible
+# getrandom should be handled by anchor-lang's dependencies.

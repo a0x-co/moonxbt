@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "programs/token_auction_program"
+]
+resolver = "2" # Use edition 2021 resolver
+
+[profile.release]
+overflow-checks = true
+# Other recommended release profile settings for Solana programs:
+# lto = "fat"
+# codegen-units = 1
+# opt-level = "z" # Optimize for size
+# strip = "symbols"
