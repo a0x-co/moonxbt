@@ -9,6 +9,7 @@ import {
   FaLinkedin,
   FaInstagram,
   FaTiktok,
+  FaWifi,
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
@@ -78,6 +79,32 @@ const MobileVideoDisplay = ({
   show: boolean;
   videoUrl: string;
 }) => {
+  const [liked, setLiked] = useState(false);
+  const [likes, setLikes] = useState(1234);
+  const [saved, setSaved] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleLike = () => {
+    if (liked) {
+      setLikes(likes - 1);
+    } else {
+      setLikes(likes + 1);
+    }
+    setLiked(!liked);
+  };
+
+  const handleSave = () => {
+    setSaved(!saved);
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+    }
+  };
+
   return (
     <motion.div
       className="fixed inset-0 z-30 items-center justify-end pr-[20%] pointer-events-none hidden md:flex"
@@ -104,12 +131,12 @@ const MobileVideoDisplay = ({
         }}
       >
         {/* Dispositivo móvil */}
-        <div className="relative w-[320px] h-[650px] rounded-[40px] overflow-hidden shadow-2xl bg-gray-900 border-[8px] border-gray-800">
+        <div className="relative w-[330px] h-[650px] rounded-[40px] overflow-hidden shadow-2xl bg-gray-900 border-[8px] border-gray-800">
           {/* Notch del teléfono */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[140px] h-[30px] bg-gray-900 rounded-b-[16px] z-20"></div>
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[140px] h-[24px] bg-gray-900 rounded-b-[16px] z-20"></div>
 
           {/* Barra de estado */}
-          <div className="w-full h-[35px] bg-gray-900 flex justify-between items-center text-white text-sm px-6 z-10 relative">
+          <div className="w-full h-[24px] bg-gradient-to-r from-blue-600 to-blue-700 flex justify-between items-center text-white text-sm px-6 z-10 relative">
             <span>
               {new Date().toLocaleTimeString("es-ES", {
                 hour: "2-digit",
@@ -117,45 +144,8 @@ const MobileVideoDisplay = ({
               })}
             </span>
             <div className="flex space-x-1 items-center">
-              <div className="h-2.5 w-2.5 rounded-full bg-green-500"></div>
-              <div className="h-4 w-4 text-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M19.44,13H17.37a1.09,1.09,0,0,0-1.09,1.09h0a1.09,1.09,0,0,0,1.09,1.09h2.06A1.09,1.09,0,0,0,20.53,14h0A1.09,1.09,0,0,0,19.44,13Z"></path>
-                  <path d="M17.2,8.18H19a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,19,6H17.2a1.09,1.09,0,0,0-1.09,1.09h0A1.09,1.09,0,0,0,17.2,8.18Z"></path>
-                  <path d="M19.44,16.94H17.37a1.09,1.09,0,0,0-1.09,1.09h0a1.09,1.09,0,0,0,1.09,1.09h2.06a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,19.44,16.94Z"></path>
-                  <path d="M8.41,6H6.59A1.09,1.09,0,0,0,5.5,7.09H5.5A1.09,1.09,0,0,0,6.59,8.18H8.41A1.09,1.09,0,0,0,9.5,7.09H9.5A1.09,1.09,0,0,0,8.41,6Z"></path>
-                  <path d="M8.41,13H6.59a1.09,1.09,0,0,0-1.09,1.09H5.5A1.09,1.09,0,0,0,6.59,15.18H8.41a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,8.41,13Z"></path>
-                  <path d="M8.41,16.94H6.59a1.09,1.09,0,0,0-1.09,1.09H5.5a1.09,1.09,0,0,0,1.09,1.09H8.41a1.09,1.09,0,0,0,1.09-1.09h0A1.09,1.09,0,0,0,8.41,16.94Z"></path>
-                  <rect
-                    width="5.82"
-                    height="3.27"
-                    x="9.09"
-                    y="5.91"
-                    rx="1.09"
-                    ry="1.09"
-                  ></rect>
-                  <rect
-                    width="5.82"
-                    height="3.27"
-                    x="9.09"
-                    y="13"
-                    rx="1.09"
-                    ry="1.09"
-                  ></rect>
-                  <rect
-                    width="5.82"
-                    height="3.27"
-                    x="9.09"
-                    y="16.94"
-                    rx="1.09"
-                    ry="1.09"
-                  ></rect>
-                </svg>
-              </div>
+              <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
+              <FaWifi className="h-4 w-4" />
             </div>
           </div>
 
@@ -206,20 +196,202 @@ const MobileVideoDisplay = ({
             <div className="relative h-full w-full overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center">
                 <video
+                  ref={videoRef}
                   src={videoUrl}
                   className="h-full w-full object-cover"
                   autoPlay
                   loop
-                  muted
+                  muted={isMuted}
                   playsInline
                 />
               </div>
 
-              {/* Controles superpuestos */}
+              {/* Overlay para mejorar contraste */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent opacity-60 pointer-events-none"></div>
+
+              {/* Información del creador - estilo TikTok */}
+              <div className="absolute bottom-20 left-3 right-12 z-20">
+                <div className="mb-2">
+                  <p className="text-white font-bold text-sm">@moonXBT</p>
+                  <p className="text-white text-xs opacity-90">
+                    Promote your project on social media 🔥
+                  </p>
+                </div>
+                {/* <div className="flex items-center space-x-2">
+                  <div className="h-7 w-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    M
+                  </div>
+                  <p className="text-white text-xs">
+                    <span className="opacity-70">Music:</span> Crypto Trader
+                    Beat
+                  </p>
+                </div> */}
+              </div>
+
+              {/* Botones de interacción vertical - estilo TikTok */}
+              <div className="absolute right-2 bottom-24 flex flex-col items-center space-y-5 z-20 pointer-events-auto">
+                {/* <div className="flex flex-col items-center">
+                  <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-white mb-1">
+                    <img
+                      src="/assets/logo.png"
+                      alt="Perfil"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold -mt-3 border border-black">
+                    +
+                  </div>
+                </div> */}
+
+                {/* Corazón / Like */}
+                <div className="flex flex-col items-center">
+                  <button
+                    className="w-10 h-10 flex items-center justify-center"
+                    onClick={handleLike}
+                  >
+                    <motion.svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-7 w-7 ${
+                        liked ? "text-red-500" : "text-white"
+                      }`}
+                      fill={liked ? "currentColor" : "none"}
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      whileTap={{ scale: 1.5 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </motion.svg>
+                  </button>
+                  <span className="text-white text-xs font-semibold">
+                    {likes}
+                  </span>
+                </div>
+
+                {/* Comentarios */}
+                <div className="flex flex-col items-center">
+                  <button className="w-10 h-10 flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-7 w-7 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </button>
+                  <span className="text-white text-xs font-semibold">421</span>
+                </div>
+
+                {/* Compartir */}
+                <div className="flex flex-col items-center">
+                  <button className="w-10 h-10 flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-7 w-7 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                  </button>
+                  <span className="text-white text-xs font-semibold">89</span>
+                </div>
+
+                {/* Guardar */}
+                <div className="flex flex-col items-center">
+                  <button
+                    className="w-10 h-10 flex items-center justify-center"
+                    onClick={handleSave}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-7 w-7 ${
+                        saved ? "text-yellow-400" : "text-white"
+                      }`}
+                      fill={saved ? "currentColor" : "none"}
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                      />
+                    </svg>
+                  </button>
+                  <span className="text-white text-xs font-semibold">56</span>
+                </div>
+
+                {/* Control de volumen */}
+                <div className="flex flex-col items-center">
+                  <button
+                    className="w-10 h-10 flex items-center justify-center"
+                    onClick={toggleMute}
+                  >
+                    <motion.svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-7 w-7 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      whileTap={{ scale: 1.2 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {isMuted ? (
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                        />
+                      ) : (
+                        <>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                          />
+                        </>
+                      )}
+                    </motion.svg>
+                  </button>
+                  <span className="text-white text-xs font-semibold">
+                    {isMuted ? "Muted" : "On"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Controles inferiores */}
               <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between items-center bg-gradient-to-t from-black/70 to-transparent text-white">
                 <div>
-                  <span className="text-sm font-medium">Video promocional</span>
-                  <p className="text-xs opacity-70">Subasta: 3.24 ETH</p>
+                  <span className="text-sm font-medium">Promotional video</span>
+                  <p className="text-xs opacity-70">Auction: 3.24 ETH</p>
                 </div>
                 <div className="flex space-x-3">
                   <button className="bg-white/20 rounded-full p-1.5">
@@ -465,7 +637,7 @@ const TerminalHero = () => {
         {/* Mobile Video Display */}
         <MobileVideoDisplay
           show={showMobileVideo}
-          videoUrl="/assets/moonxbt.mp4"
+          videoUrl="https://storage.googleapis.com/a0x-mirror-storage/agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747354228987.mp4"
         />
 
         {/* Terminal Content */}
