@@ -1,32 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../shadcn/sheet";
 // import { ConnectButton } from '@rainbow-me/rainbowkit';
 // import { useContractWrite, useAccount, useDisconnect, useWaitForTransactionReceipt, useContractRead } from 'wagmi';
-import { encodeFunctionData, erc20Abi, formatUnits, parseEther } from "viem";
 import {
   A0X_CONTRACT_ADDRESS,
   AUCTION_CONTRACT_ADDRESS,
-  AUCTION_ABI,
 } from "@/constants/contracts";
+import { useApprove } from "@/hooks/useApprove";
 import { useAuctionData } from "@/hooks/useAuctionData";
-import { BidForm } from "./BidForm";
 import {
-  usePrivy,
-  useWallets,
-  useSendTransaction as useSendTransactionPrivy,
   useLogout,
+  usePrivy,
+  useSendTransaction as useSendTransactionPrivy,
+  useWallets,
 } from "@privy-io/react-auth";
+import { ethers } from "ethers";
+import { encodeFunctionData, erc20Abi, formatUnits, parseEther } from "viem";
+import { base } from "viem/chains";
 import {
   useDisconnect,
   useReadContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { writeContract } from "@wagmi/core";
-import { base } from "viem/chains";
-import { useApprove } from "@/hooks/useApprove";
-import { ethers } from "ethers";
+import { BidForm } from "./BidForm";
 
 interface VideoAuctionSheetProps {
   isOpen: boolean;
@@ -57,6 +55,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     formattedBidAmount,
     parsedResourceValue,
     isLoading: isLoadingAuctionData,
+    lastAuctionWinner,
+    lastAuctionAmount,
+    lastAuctionResourceValue,
   } = useAuctionData();
 
   // Check A0x allowance
@@ -356,9 +357,6 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               <path d="m6 9 6 6 6-6" />
             </svg> */}
           </button>
-          <p className="font-mono text-sm text-white/80">
-            Balance: {formattedBalanceOfA0X} $A0X
-          </p>
           <button
             onClick={handleDisconnect}
             className="text-white/50 hover:text-white/80 transition-colors flex items-center gap-2"
@@ -481,9 +479,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 isApproved={!!allowanceData && allowanceData > BigInt(0)}
                 onApproveClick={handleApproveClick}
                 isApproving={isApproving}
-                isBidding={isBidding}
-                isConfirmingApproval={isConfirmingApproval}
-                isConfirmingBid={isConfirmingBid}
+                isWritingBid={isBidding}
+                isWaitingApproval={isConfirmingApproval}
+                isWaitingBid={isConfirmingBid}
                 balanceOfA0X={formattedBalanceOfA0X}
                 bidAmount={bidAmount}
                 setBidAmount={setBidAmount}

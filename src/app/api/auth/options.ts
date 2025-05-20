@@ -22,7 +22,7 @@ interface Profile {
 
 const domain =
   process.env.NODE_ENV === "development"
-    ? "localhost:3000"
+    ? "localhost:3001"
     : "https://www.moonxbt.fun";
 
 export const authOptions: NextAuthOptions = {

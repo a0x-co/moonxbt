@@ -10,6 +10,8 @@ import {
   FaInstagram,
   FaTiktok,
   FaWifi,
+  FaPlay,
+  FaPause,
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
@@ -84,6 +86,9 @@ const MobileVideoDisplay = ({
   const [saved, setSaved] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(true);
+  const [showPlaybackControls, setShowPlaybackControls] = useState(false);
+  const controlHideTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleLike = () => {
     if (liked) {
@@ -104,6 +109,58 @@ const MobileVideoDisplay = ({
       videoRef.current.muted = !isMuted;
     }
   };
+
+  const togglePlayPause = () => {
+    if (videoRef.current) {
+      console.log("togglePlayPause - isPlayingVideo:", isPlayingVideo);
+      if (isPlayingVideo) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setShowPlaybackControls(true);
+      resetControlHideTimer();
+    }
+  };
+
+  const handleVideoClick = () => {
+    console.log("handleVideoClick");
+    setShowPlaybackControls(true);
+    resetControlHideTimer();
+    if (isPlayingVideo && videoRef.current) {
+      videoRef.current.pause();
+    } else if (!isPlayingVideo && videoRef.current) {
+      videoRef.current.play();
+    }
+  };
+
+  const resetControlHideTimer = () => {
+    if (controlHideTimer.current) {
+      clearTimeout(controlHideTimer.current);
+    }
+    if (isPlayingVideo) {
+      controlHideTimer.current = setTimeout(() => {
+        setShowPlaybackControls(false);
+      }, 2000);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (controlHideTimer.current) {
+        clearTimeout(controlHideTimer.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (show || !isPlayingVideo) {
+      setShowPlaybackControls(true);
+      resetControlHideTimer();
+    } else {
+      setShowPlaybackControls(false);
+    }
+  }, [show, isPlayingVideo]);
 
   return (
     <motion.div
@@ -203,7 +260,32 @@ const MobileVideoDisplay = ({
                   loop
                   muted={isMuted}
                   playsInline
+                  onPlay={() => setIsPlayingVideo(true)}
+                  onPause={() => setIsPlayingVideo(false)}
+                  onClick={handleVideoClick}
+                  style={{ pointerEvents: "auto" }}
                 />
+
+                {showPlaybackControls && (
+                  <div className="absolute top-[35%] left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+                    <div className="bg-black bg-opacity-50 p-4 rounded-full">
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePlayPause();
+                          }}
+                        >
+                          {isPlayingVideo ? (
+                            <FaPause className="text-white text-2xl" />
+                          ) : (
+                            <FaPlay className="text-white text-2xl" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Overlay para mejorar contraste */}

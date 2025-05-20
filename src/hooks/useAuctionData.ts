@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useContractRead } from 'wagmi';
-import { formatEther } from 'viem';
-import { AUCTION_CONTRACT_ADDRESS, AUCTION_ABI } from '@/constants/contracts';
+import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS } from "@/constants/contracts";
+import { formatEther } from "viem";
+import { useReadContract, useReadContracts } from "wagmi";
 
 export interface ResourceValue {
   url: string;
@@ -17,69 +16,108 @@ export interface AuctionData {
   formattedBidAmount: string;
   currentResourceValue: string | undefined;
   parsedResourceValue: ResourceValue | null;
+  lastAuctionWinner: `0x${string}` | undefined;
+  lastAuctionAmount: bigint | undefined;
+  lastAuctionResourceValue: string | undefined;
   isLoading: boolean;
 }
 
 export function useAuctionData(): AuctionData {
-  // Get current auction ID
-  const { data: currentAuctionIdData, isLoading: isLoadingId } = useContractRead({
-    address: AUCTION_CONTRACT_ADDRESS,
-    abi: AUCTION_ABI,
-    functionName: 'currentAuctionId',
-    watch: true,
+  const {
+    data: auctionData,
+    isPending: isLoadingAuctionContracts,
+    error: auctionContractsError,
+  } = useReadContracts({
+    contracts: [
+      {
+        address: AUCTION_CONTRACT_ADDRESS,
+        abi: AUCTION_ABI,
+        functionName: "currentAuctionId",
+      },
+      {
+        address: AUCTION_CONTRACT_ADDRESS,
+        abi: AUCTION_ABI,
+        functionName: "getTimeRemaining",
+      },
+      {
+        address: AUCTION_CONTRACT_ADDRESS,
+        abi: AUCTION_ABI,
+        functionName: "getLastAuctionWinner",
+      },
+    ],
   });
 
-  // Get time remaining
-  const { data: timeRemainingData, isLoading: isLoadingTime } = useContractRead({
+  const currentAuctionIdData = auctionData?.[0]?.result as bigint | undefined;
+  const timeRemainingData = auctionData?.[1]?.result as bigint | undefined;
+  const lastAuctionWinnerData = auctionData?.[2]?.result as
+    | `0x${string}`
+    | undefined;
+
+  const {
+    data: currentBidInfoData,
+    isLoading: isLoadingBid,
+    error: bidError,
+  } = useReadContract({
     address: AUCTION_CONTRACT_ADDRESS,
     abi: AUCTION_ABI,
-    functionName: 'getTimeRemaining',
-    watch: true,
+    functionName: "getBid",
+    args: currentAuctionIdData ? [currentAuctionIdData] : undefined,
+    query: {
+      enabled: currentAuctionIdData !== undefined,
+    },
   });
 
-  // Get current bid info
-  const { data: currentBidInfoData, isLoading: isLoadingBid } = useContractRead({
-    address: AUCTION_CONTRACT_ADDRESS,
-    abi: AUCTION_ABI,
-    functionName: 'getBid',
-    args: currentAuctionIdData ? [currentAuctionIdData as bigint] : undefined,
-    watch: true,
-    enabled: !!currentAuctionIdData,
-  });
-
-  // Format time remaining
   const formatTime = (seconds: bigint | undefined): string => {
-    if (!seconds || seconds <= 0n) return "00:00:00";
+    if (!seconds || seconds <= BigInt(0)) return "00:00:00";
     const totalSeconds = Number(seconds);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const remainingSeconds = totalSeconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  // Parse resource value
-  const parseResourceValue = (value: string | undefined): ResourceValue | null => {
+  const parseResourceValue = (
+    value: string | undefined
+  ): ResourceValue | null => {
     if (!value) return null;
     try {
       return JSON.parse(value) as ResourceValue;
     } catch (e) {
-      console.error('Failed to parse resource value:', e);
+      console.error("Failed to parse resource value:", e);
       return null;
     }
   };
 
-  // Extract and format bid info
-  const [currentBidder, currentBidAmount, currentResourceValue] = (currentBidInfoData as [string, bigint, string] | undefined) ?? [undefined, undefined, undefined];
+  const [currentBidder, currentBidAmount, currentResourceValue] =
+    (currentBidInfoData as [string, bigint, string] | undefined) ?? [
+      undefined,
+      undefined,
+      undefined,
+    ];
+
+  const [lastAuctionWinner, lastAuctionAmount, lastAuctionResourceValue] =
+    (lastAuctionWinnerData as [string, bigint, string] | undefined) ?? [
+      undefined,
+      undefined,
+      undefined,
+    ];
 
   return {
-    currentAuctionId: currentAuctionIdData as bigint | undefined,
-    timeRemaining: timeRemainingData as bigint | undefined,
-    formattedTimeLeft: formatTime(timeRemainingData as bigint | undefined),
+    currentAuctionId: currentAuctionIdData,
+    timeRemaining: timeRemainingData,
+    formattedTimeLeft: formatTime(timeRemainingData),
     currentBidder: currentBidder as `0x${string}` | undefined,
     currentBidAmount: currentBidAmount,
-    formattedBidAmount: currentBidAmount ? `${formatEther(currentBidAmount)} A0X` : "0 A0X",
+    formattedBidAmount: currentBidAmount
+      ? `${formatEther(currentBidAmount)} A0X`
+      : "0 A0X",
     currentResourceValue,
     parsedResourceValue: parseResourceValue(currentResourceValue),
-    isLoading: isLoadingId || isLoadingTime || isLoadingBid,
+    isLoading: isLoadingAuctionContracts || isLoadingBid,
+    lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
+    lastAuctionAmount: lastAuctionAmount,
+    lastAuctionResourceValue: lastAuctionResourceValue,
   };
-} 
+}
