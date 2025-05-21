@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuctionData } from "@/hooks/useAuctionData";
 import { useBid } from "@/hooks/useBid"; // Your refined hook
 import { useState, useEffect, useRef } from "react";
+import { z } from "zod";
 // Keep useWriteContract if used elsewhere in parent, but not strictly needed here now
 // import { useWriteContract } from "wagmi";
 
@@ -47,6 +49,25 @@ export function BidForm({
   const [debouncedResourceMetadata, setDebouncedResourceMetadata] =
     useState<string>("");
 
+  const [urlError, setUrlError] = useState<string>("");
+
+  // Esquema de validación para la URL
+  const urlSchema = z.string().url("Por favor ingresa una URL válida");
+
+  // Función para validar la URL
+  const validateUrl = (url: string) => {
+    try {
+      urlSchema.parse(url);
+      setUrlError("");
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setUrlError(error.errors[0].message);
+      }
+      return false;
+    }
+  };
+
   // Effects to debounce inputs and update debounced states
   // Debounce rawBidAmountInput
   useEffect(() => {
@@ -63,7 +84,12 @@ export function BidForm({
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedResourceUrl(rawResourceUrlInput);
-    }, 300); // 300ms delay
+      if (rawResourceUrlInput) {
+        validateUrl(rawResourceUrlInput);
+      } else {
+        setUrlError("");
+      }
+    }, 300);
 
     return () => {
       clearTimeout(handler);
@@ -86,6 +112,8 @@ export function BidForm({
     setRawBidAmountInput(parentBidAmount);
     setDebouncedBidAmount(parentBidAmount); // Also update debounced on external change
   }, [parentBidAmount]);
+
+  const { refetchAuctionData, refetchBid } = useAuctionData();
 
   // --- ÚNICA LLAMADA AL HOOK useBid ---
   // Use the useBid hook with the DEBOUNCED values
@@ -114,7 +142,8 @@ export function BidForm({
       setRawBidAmountInput("");
       setRawResourceUrlInput("");
       setRawResourceMetadataInput("");
-      // You might want to call a parent callback here too, e.g., onBidSuccess(txHash)
+      refetchAuctionData();
+      refetchBid();
     }
   );
   // --- FIN ÚNICA LLAMADA AL HOOK useBid ---
@@ -250,7 +279,7 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(25)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10"
+            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             25%
@@ -259,7 +288,7 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(50)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10"
+            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             50%
@@ -268,7 +297,7 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(75)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10"
+            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             75%
@@ -277,7 +306,7 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(100)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10"
+            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             100%
@@ -287,14 +316,19 @@ export function BidForm({
         <p className="text-xs text-white/60">Balance: {balanceOfA0X} A0X</p>
       </div>
 
-      <Input
-        type="url"
-        placeholder="Resource URL (e.g., https://...)"
-        value={rawResourceUrlInput} // Bind to local raw state
-        onChange={(e) => setRawResourceUrlInput(e.target.value)} // Update local raw state
-        className="bg-[#1a237e]/30 border-white/10 text-white placeholder:text-white/50"
-        disabled={areInputsDisabled} // Use new inputs disabled state
-      />
+      <div className="space-y-2">
+        <Input
+          type="url"
+          placeholder="Resource URL (e.g., https://...)"
+          value={rawResourceUrlInput}
+          onChange={(e) => setRawResourceUrlInput(e.target.value)}
+          className={`bg-[#1a237e]/30 border-white/10 text-white placeholder:text-white/50 ${
+            urlError ? "border-red-500" : ""
+          }`}
+          disabled={areInputsDisabled}
+        />
+        {urlError && <p className="text-xs text-red-400">{urlError}</p>}
+      </div>
 
       <Textarea
         placeholder="Additional Metadata (optional)"
@@ -315,7 +349,7 @@ export function BidForm({
       </Button>
 
       {/* Revoke Approval Button */}
-      {isApproved && (
+      {/* {isApproved && (
         <Button
           onClick={handleRevokeApprovalClick}
           className="w-full bg-[#ffeb3b]/80 hover:bg-[#ffeb3b] text-[#1a237e] font-bold"
@@ -323,7 +357,7 @@ export function BidForm({
         >
           Revoke Approval
         </Button>
-      )}
+      )} */}
 
       {/* Status/Loading Indicator */}
       {/* Show loading status based on specific states */}

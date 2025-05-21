@@ -410,63 +410,127 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
 
         <div className="mt-6 space-y-6">
           {/* Auction Status Section */}
-          <div className="bg-[#1a237e]/20 rounded-lg p-4 space-y-3">
-            <h3 className="font-mono text-lg text-white/90">
+          <div
+            className="rounded-xl p-6"
+            style={{
+              background: "rgba(30, 60, 180, 0.25)",
+              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
+              backdropFilter: "blur(8px)",
+              border: "1.5px solid rgba(255,255,255,0.12)",
+            }}
+          >
+            <h3 className="font-mono text-lg text-white/90 mb-4">
               Current Auction Status
             </h3>
             {isLoadingAuctionData ? (
               <p className="text-white/70">Loading auction data...</p>
             ) : (
-              <>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-white/70">Time Remaining:</span>
-                  <span className="font-mono text-lg text-white">
-                    {formattedTimeLeft}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-white/70">
-                    Current Highest Bid:
-                  </span>
-                  <span className="font-mono text-lg text-white">
-                    {formattedBidAmount}
-                  </span>
-                </div>
-                {parsedResourceValue?.url && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/70">Current URL:</span>
-                    <a
-                      href={parsedResourceValue.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-sm text-blue-300 hover:underline truncate max-w-[50%]"
-                    >
-                      {parsedResourceValue.url}
-                    </a>
-                  </div>
-                )}
-                {parsedResourceValue?.metadata &&
-                  parsedResourceValue.metadata !== "N/A" && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/70">Metadata:</span>
-                      <span className="font-mono text-sm text-white/80 truncate max-w-[50%]">
-                        {parsedResourceValue.metadata}
-                      </span>
-                    </div>
-                  )}
-                {currentBidder &&
-                  currentBidder !==
-                    "0x0000000000000000000000000000000000000000" && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/70">
-                        Highest Bidder:
-                      </span>
-                      <span className="font-mono text-sm text-white/80 truncate max-w-[50%]">
-                        {currentBidder}
-                      </span>
-                    </div>
-                  )}
-              </>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-center shadow-lg">
+                  <thead>
+                    <tr>
+                      <th
+                        className="px-6 py-3 rounded-tl-lg bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
+                        style={{ backdropFilter: "blur(2px)" }}
+                      >
+                        Time Remaining
+                      </th>
+                      <th
+                        className="px-6 py-3  bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
+                        style={{ backdropFilter: "blur(2px)" }}
+                      >
+                        Current Highest Bid
+                      </th>
+                      {parsedResourceValue?.url && (
+                        <th
+                          className="px-6 py-3 bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
+                          style={{ backdropFilter: "blur(2px)" }}
+                        >
+                          Current URL
+                        </th>
+                      )}
+                      {parsedResourceValue?.metadata &&
+                        parsedResourceValue.metadata !== "N/A" && (
+                          <th
+                            className="px-6 py-3 bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
+                            style={{ backdropFilter: "blur(2px)" }}
+                          >
+                            Metadata
+                          </th>
+                        )}
+                      {currentBidder &&
+                        currentBidder !==
+                          "0x0000000000000000000000000000000000000000" && (
+                          <th
+                            className="px-6 py-3 rounded-tr-lg bg-white/20 text-white font-bold tracking-wide border-b border-white/20"
+                            style={{ backdropFilter: "blur(2px)" }}
+                          >
+                            Highest Bidder
+                          </th>
+                        )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-6 py-3 bg-white/10 rounded-bl-lg border-r-2 border-white/20">
+                        <span
+                          className="font-mono text-base text-white shadow-sm"
+                          style={{ backdropFilter: "blur(2px)" }}
+                        >
+                          {formattedTimeLeft}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3 bg-white/10 border-r-2 border-white/20">
+                        <span className="font-mono text-base text-white">
+                          {formattedBidAmount}
+                        </span>
+                      </td>
+                      {parsedResourceValue?.url && (
+                        <td className="px-6 py-3 bg-white/10 border-r-2 border-white/20">
+                          <a
+                            href={parsedResourceValue.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-base text-blue-200 hover:underline"
+                            style={{ backdropFilter: "blur(2px)" }}
+                          >
+                            {parsedResourceValue.url}
+                          </a>
+                        </td>
+                      )}
+                      {parsedResourceValue?.metadata &&
+                        parsedResourceValue.metadata !== "N/A" && (
+                          <td className="px-6 py-3 bg-white/10 border-r-2 border-white/20">
+                            <span
+                              className="font-mono text-base text-white/80"
+                              style={{ backdropFilter: "blur(2px)" }}
+                            >
+                              {parsedResourceValue.metadata}
+                            </span>
+                          </td>
+                        )}
+                      {currentBidder &&
+                        currentBidder !==
+                          "0x0000000000000000000000000000000000000000" && (
+                          <td className="px-6 py-3 bg-white/10 rounded-br-lg">
+                            <a
+                              href={`https://basescan.org/address/${currentBidder}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-base text-blue-200 hover:underline"
+                              style={{ backdropFilter: "blur(2px)" }}
+                            >
+                              {`${currentBidder.slice(
+                                0,
+                                6
+                              )}...${currentBidder.slice(-4)}`}
+                            </a>
+                          </td>
+                        )}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 

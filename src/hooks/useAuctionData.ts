@@ -1,6 +1,7 @@
 import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS } from "@/constants/contracts";
 import { formatEther } from "viem";
 import { useReadContract, useReadContracts } from "wagmi";
+import { useEffect, useState } from "react";
 
 export interface ResourceValue {
   url: string;
@@ -20,13 +21,22 @@ export interface AuctionData {
   lastAuctionAmount: bigint | undefined;
   lastAuctionResourceValue: string | undefined;
   isLoading: boolean;
+  refetchAuctionData: () => void;
+  refetchBid: () => void;
 }
 
 export function useAuctionData(): AuctionData {
+  const [localTimeRemaining, setLocalTimeRemaining] = useState<
+    bigint | undefined
+  >(undefined);
+  const [formattedTimeLeft, setFormattedTimeLeft] =
+    useState<string>("00:00:00");
+
   const {
     data: auctionData,
     isPending: isLoadingAuctionContracts,
     error: auctionContractsError,
+    refetch: refetchAuctionData,
   } = useReadContracts({
     contracts: [
       {
@@ -57,6 +67,7 @@ export function useAuctionData(): AuctionData {
     data: currentBidInfoData,
     isLoading: isLoadingBid,
     error: bidError,
+    refetch: refetchBid,
   } = useReadContract({
     address: AUCTION_CONTRACT_ADDRESS,
     abi: AUCTION_ABI,
@@ -67,16 +78,48 @@ export function useAuctionData(): AuctionData {
     },
   });
 
-  const formatTime = (seconds: bigint | undefined): string => {
-    if (!seconds || seconds <= BigInt(0)) return "00:00:00";
-    const totalSeconds = Number(seconds);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const remainingSeconds = totalSeconds % 60;
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
+  // Actualizar el tiempo local cuando cambia el tiempo del contrato
+  useEffect(() => {
+    if (timeRemainingData !== undefined) {
+      setLocalTimeRemaining(timeRemainingData);
+    }
+  }, [timeRemainingData]);
+
+  // Contador en tiempo real
+  useEffect(() => {
+    if (!localTimeRemaining || localTimeRemaining <= BigInt(0)) {
+      setFormattedTimeLeft("00:00:00");
+      return;
+    }
+
+    const formatTime = (seconds: bigint): string => {
+      const totalSeconds = Number(seconds);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const remainingSeconds = totalSeconds % 60;
+
+      return `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+    };
+
+    // Actualizar el tiempo formateado inmediatamente
+    setFormattedTimeLeft(formatTime(localTimeRemaining));
+
+    // Configurar el intervalo para actualizar cada segundo
+    const interval = setInterval(() => {
+      setLocalTimeRemaining((prev) => {
+        if (!prev || prev <= BigInt(0)) {
+          clearInterval(interval);
+          return BigInt(0);
+        }
+        return prev - BigInt(1);
+      });
+    }, 1000);
+
+    // Limpiar el intervalo cuando el componente se desmonte o el tiempo cambie
+    return () => clearInterval(interval);
+  }, [localTimeRemaining]);
 
   const parseResourceValue = (
     value: string | undefined
@@ -106,8 +149,8 @@ export function useAuctionData(): AuctionData {
 
   return {
     currentAuctionId: currentAuctionIdData,
-    timeRemaining: timeRemainingData,
-    formattedTimeLeft: formatTime(timeRemainingData),
+    timeRemaining: localTimeRemaining,
+    formattedTimeLeft,
     currentBidder: currentBidder as `0x${string}` | undefined,
     currentBidAmount: currentBidAmount,
     formattedBidAmount: currentBidAmount
@@ -119,5 +162,7 @@ export function useAuctionData(): AuctionData {
     lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
     lastAuctionAmount: lastAuctionAmount,
     lastAuctionResourceValue: lastAuctionResourceValue,
+    refetchAuctionData,
+    refetchBid,
   };
 }

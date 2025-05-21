@@ -19,7 +19,9 @@ body {
   }
 }
 
-
+.hide-sheet-overlay .fixed.inset-0.z-40.bg-black\/80 {
+  display: none !important;
+}
 
 @layer base {
   :root {
@@ -76,8 +78,6 @@ body {
     --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {
