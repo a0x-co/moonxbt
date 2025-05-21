@@ -121,7 +121,7 @@ const MobileVideoDisplay = ({
         <div>
           <p className="text-white text-xs opacity-70">Last winner</p>
           <p className="text-white text-sm font-bold">
-            {lastAuctionResourceValue}
+            a0x.co {/* {lastAuctionResourceValue} */}
           </p>
         </div>
         <div className="flex space-x-2">
@@ -139,7 +139,8 @@ const MobileVideoDisplay = ({
             </svg>
           </a> */}
           <a
-            href={lastAuctionResourceValue}
+            // href={lastAuctionResourceValue}
+            href="https://a0x.co"
             className="bg-white/10 p-1.5 rounded-full hover:bg-white/20 transition-colors"
           >
             <svg

@@ -1,6 +1,6 @@
 // Deployed contract address on Base
 export const AUCTION_CONTRACT_ADDRESS =
-  "0xe58d01d0c5e9bb291a061dec6df9ce64bf1d7c79" as const;
+  "0xa02ddbFDa3FD7Ded61Ca32f17BBDf322328bA2eB" as const;
 
 export const USDC_CONTRACT_ADDRESS =
   "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;

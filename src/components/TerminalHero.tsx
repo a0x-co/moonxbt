@@ -316,7 +316,7 @@ const TerminalHero = () => {
           >
             <MobileVideoDisplay
               show={showMobileVideo}
-              videoUrl="https://storage.googleapis.com/a0x-mirror-storage/agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747354228987.mp4"
+              videoUrl="https://storage.googleapis.com/a0x-mirror-storage/agents-videos/3e444822-7a6c-0e5d-a36d-7087fb23685b-1747847046886.mp4"
             />
           </motion.div>
         </motion.div>
