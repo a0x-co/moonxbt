@@ -343,7 +343,7 @@ export function BidForm({
       <Button
         onClick={!isApproved ? onApproveClick : handleBidSubmit}
         className="w-full bg-[#ffeb3b]/80 hover:bg-[#ffeb3b] text-[#1a237e] font-bold"
-        disabled={isMainButtonDisabled} // Use the calculated disabled state for the button
+        disabled={isMainButtonDisabled}
       >
         {buttonText}
       </Button>

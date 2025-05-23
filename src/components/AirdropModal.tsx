@@ -20,8 +20,8 @@ const asciiLogoLines = [
 
 const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+    <Transition show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50" open={isOpen} onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -44,11 +44,11 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden bg-[#1752F0] border-2 border-white/20 font-mono text-white relative">
+              <Dialog.Panel className="w-full max-w-[98vw] sm:max-w-2xl mx-1 sm:mx-2 transform overflow-y-auto overflow-x-hidden max-h-[100dvh] bg-[#1752F0] border-2 border-white/20 font-mono text-white relative">
                 {/* Scanline overlay */}
                 <div className="absolute inset-0 pointer-events-none z-20" style={{background: 'repeating-linear-gradient(to bottom, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 4px)'}} />
                 {/* Background video */}
-                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                   <video
                     src="/assets/moonxbt.mp4"
                     autoPlay
@@ -59,7 +59,7 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                   />
                 </div>
                 {/* Title Bar */}
-                <div className="bg-[#1752F0] border-b-2 border-white/20 px-4 py-1 flex justify-between items-center">
+                <div className="bg-[#1752F0] border-b-2 border-white/20 px-4 py-1 flex justify-between items-center relative z-30">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-white/20 flex items-center justify-center">
                       <span className="text-white text-xs">_</span>
@@ -75,60 +75,60 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                 </div>
                 <div className="p-6 space-y-6 relative z-10">
                   {/* Animated mascot/logo */}
-                  <div className="flex justify-center mb-2">
+                  <div className="flex justify-center mb-1 sm:mb-2">
                     <Image
                       src="/assets/moonxbt.png"
                       alt="MoonXBT"
-                      width={96}
-                      height={96}
+                      width={72}
+                      height={72}
                       className="rounded-full border-2 border-white shadow-[0_0_8px_2px_#fff,0_0_24px_4px_#fff8,0_0_40px_8px_#fff4] animate-bob"
                     />
                   </div>
                   {/* ASCII Art Logo */}
-                  <pre className="text-white text-[6px] leading-none select-none text-center drop-shadow-[0_0_2px_white] tracking-widest overflow-x-auto whitespace-pre max-w-full mb-2">
+                  <pre className="hidden sm:block text-white text-[6px] leading-none select-none text-center drop-shadow-[0_0_2px_white] tracking-widest overflow-x-auto whitespace-pre max-w-full mb-1 sm:mb-2 break-words">
                     {asciiLogoLines.join("\n")}
                   </pre>
                   {/* Token Distribution */}
-                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-6 mb-4">
-                    <div className="text-white font-mono text-3xl mb-6">[TOKEN_DISTRIBUTION]</div>
+                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
+                    <div className="text-white font-mono text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words">[TOKEN_DISTRIBUTION]</div>
                     <div
-                      className="font-[\'Orbitron\',_monospace] text-[180px] font-extrabold tracking-widest mb-6 special-twenty"
+                      className="font-[\'Orbitron\',_monospace] text-[clamp(24px,18vw,80px)] sm:text-[clamp(48px,14vw,180px)] font-extrabold tracking-widest mb-2 sm:mb-6 special-twenty text-center break-words"
                     >
                       20%
                     </div>
-                    <div className="text-white/80 font-mono text-2xl">of total supply for airdrop</div>
+                    <div className="text-white/80 font-mono text-xs sm:text-2xl text-center break-words">of total supply for airdrop</div>
                   </div>
                   {/* Participation Steps */}
-                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-6 mb-4">
-                    <div className="text-white font-mono text-3xl mb-6">[PARTICIPATION_STEPS]</div>
-                    <div className="space-y-7">
-                      <div className="flex items-center gap-4">
-                        <span className="text-[#4ade80] font-mono text-2xl">[1]</span>
-                        <span className="text-white font-mono text-2xl">&gt; Visit MoonXBT Mini-app</span>
+                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
+                    <div className="text-white font-mono text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words">[PARTICIPATION_STEPS]</div>
+                    <div className="space-y-1 sm:space-y-7">
+                      <div className="flex items-center gap-1 sm:gap-4">
+                        <span className="text-[#4ade80] font-mono text-xs sm:text-2xl">[1]</span>
+                        <span className="text-white font-mono text-xs sm:text-2xl">&gt; Visit MoonXBT Mini-app</span>
                       </div>
-                      <div className="text-white/60 font-mono text-xl ml-10 mb-3">
+                      <div className="text-white/60 font-mono text-[10px] sm:text-xl ml-2 sm:ml-10 mb-1 sm:mb-3 break-words">
                         Connect wallet & verify socials
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-[#4ade80] font-mono text-2xl">[2]</span>
-                        <span className="text-white font-mono text-2xl">&gt; Follow MoonXBT</span>
+                      <div className="flex items-center gap-1 sm:gap-4">
+                        <span className="text-[#4ade80] font-mono text-xs sm:text-2xl">[2]</span>
+                        <span className="text-white font-mono text-xs sm:text-2xl">&gt; Follow MoonXBT</span>
                       </div>
-                      <div className="text-white/60 font-mono text-xl ml-10">
+                      <div className="text-white/60 font-mono text-[10px] sm:text-xl ml-2 sm:ml-10 break-words">
                         Maximize rewards by following Moon on all her socials
                       </div>
                     </div>
                   </div>
                   {/* Why Follow Moon */}
-                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-6 mb-4">
-                    <div className="text-white font-mono text-3xl mb-6">[WHY_FOLLOW_MOON]</div>
-                    <div className="text-white/80 font-mono space-y-3 text-2xl">
+                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
+                    <div className="text-white font-mono text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words">[WHY_FOLLOW_MOON]</div>
+                    <div className="text-white/80 font-mono space-y-1 sm:space-y-3 text-[10px] sm:text-2xl text-center break-words">
                       <p>&gt; MoonXBT is an AI influencer creating 1 video per day</p>
                       <p>&gt; Her objective is to help projects grow and succeed</p>
                       <p>&gt; More followers = more exposure = more success</p>
                     </div>
                   </div>
                   {/* Action Buttons */}
-                  <div className="flex justify-center gap-4 mt-4">
+                  <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
                     <button
                       onClick={onClose}
                       className="px-8 py-2 bg-[#1752F0] hover:bg-[#2563eb] text-white font-mono border-2 border-white/30 transition-colors"

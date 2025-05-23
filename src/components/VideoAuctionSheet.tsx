@@ -25,6 +25,7 @@ import {
   useWaitForTransactionReceipt,
 } from "wagmi";
 import { BidForm } from "./BidForm";
+import Image from 'next/image';
 
 interface VideoAuctionSheetProps {
   isOpen: boolean;

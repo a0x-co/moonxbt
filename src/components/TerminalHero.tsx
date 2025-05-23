@@ -287,6 +287,11 @@ const TerminalHero = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Open airdrop modal automatically on mount
+  useEffect(() => {
+    setIsAirdropOpen(true);
+  }, []);
+
   return (
     <div className="h-screen bg-[#1752F0] flex flex-col overflow-hidden">
       <div className="relative flex flex-1">
