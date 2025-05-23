@@ -261,15 +261,14 @@ export function BidForm({
               ? "10.5"
               : (parseFloat(balanceOfA0X) / 10).toFixed(2)
           })`}
-          value={rawBidAmountInput} // Bind to local raw state
+          value={rawBidAmountInput}
           onChange={(e) => {
             setRawBidAmountInput(e.target.value);
-            // Update parent state immediately for percentage buttons to work based on input
             setParentBidAmount(e.target.value);
           }}
-          className="bg-[#1a237e]/30 border-white/10 text-white placeholder:text-white/50"
-          disabled={areInputsDisabled} // Use new inputs disabled state
-          min="0" // Add min="0" for better number input handling
+          className="bg-white/20 border border-white/20 focus:border-pink-400 text-white placeholder:text-pink-100/60 shadow-inner focus:shadow-[0_0_8px_#ff3cac] text-lg font-mono px-4 py-3 rounded-lg transition"
+          disabled={areInputsDisabled}
+          min="0"
         />
 
         {/* Percentage buttons */}
@@ -279,7 +278,7 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(25)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
+            className="bg-[#1a6fff] text-white font-bold border-none shadow-sm hover:bg-[#00eaff] hover:text-white transition text-base"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             25%
@@ -288,7 +287,7 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(50)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
+            className="bg-[#1a6fff] text-white font-bold border-none shadow-sm hover:bg-[#00eaff] hover:text-white transition text-base"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             50%
@@ -297,7 +296,7 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(75)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
+            className="bg-[#1a6fff] text-white font-bold border-none shadow-sm hover:bg-[#00eaff] hover:text-white transition text-base"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             75%
@@ -306,14 +305,14 @@ export function BidForm({
             type="button"
             onClick={() => setBidPercentage(100)}
             variant="outline"
-            className="bg-[#1a237e]/30 hover:bg-[#1a237e]/50 text-white border-white/10 hover:text-green-100"
+            className="bg-[#1a6fff] text-white font-bold border-none shadow-sm hover:bg-[#00eaff] hover:text-white transition text-base"
             disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
           >
             100%
           </Button>
         </div>
         {/* Display balance */}
-        <p className="text-xs text-white/60">Balance: {balanceOfA0X} A0X</p>
+        <p className="text-xs text-white/70 font-mono">Balance: {balanceOfA0X} A0X</p>
       </div>
 
       <div className="space-y-2">
@@ -322,9 +321,7 @@ export function BidForm({
           placeholder="Resource URL (e.g., https://...)"
           value={rawResourceUrlInput}
           onChange={(e) => setRawResourceUrlInput(e.target.value)}
-          className={`bg-[#1a237e]/30 border-white/10 text-white placeholder:text-white/50 ${
-            urlError ? "border-red-500" : ""
-          }`}
+          className={`bg-white/20 border border-white/20 focus:border-pink-400 text-white placeholder:text-pink-100/60 shadow-inner focus:shadow-[0_0_8px_#ff3cac] text-base font-mono px-4 py-3 rounded-lg transition ${urlError ? "border-red-500" : ""}`}
           disabled={areInputsDisabled}
         />
         {urlError && <p className="text-xs text-red-400">{urlError}</p>}
@@ -332,19 +329,20 @@ export function BidForm({
 
       <Textarea
         placeholder="Additional Metadata (optional)"
-        value={rawResourceMetadataInput} // Bind to local raw state
-        onChange={(e) => setRawResourceMetadataInput(e.target.value)} // Update local raw state
-        className="bg-[#1a237e]/30 border-white/10 text-white placeholder:text-white/50"
+        value={rawResourceMetadataInput}
+        onChange={(e) => setRawResourceMetadataInput(e.target.value)}
+        className="bg-white/20 border border-white/20 focus:border-pink-400 text-white placeholder:text-pink-100/60 shadow-inner focus:shadow-[0_0_8px_#ff3cac] text-base font-mono px-4 py-3 rounded-lg transition"
         rows={2}
-        disabled={areInputsDisabled} // Use new inputs disabled state
+        disabled={areInputsDisabled}
       />
 
       {/* Main action button */}
       <Button
         onClick={!isApproved ? onApproveClick : handleBidSubmit}
-        className="w-full bg-[#ffeb3b]/80 hover:bg-[#ffeb3b] text-[#1a237e] font-bold"
+        className="w-full py-4 text-xl font-extrabold bg-[#1a6fff] text-white rounded-xl shadow-sm hover:bg-[#00eaff] hover:text-white transition flex items-center justify-center gap-2"
         disabled={isMainButtonDisabled}
       >
+        <span className="text-xl">🚀</span>
         {buttonText}
       </Button>
 
@@ -367,13 +365,13 @@ export function BidForm({
         isWaitingBid ||
         isPromptingWallet ||
         isWaitingForConfirmation) && ( // Any transaction in progress state (approval or bid)
-        <p className="text-xs text-center text-yellow-300/80">
+        <p className="text-xs text-center text-cyan-200/80">
           Processing transaction on the blockchain...
         </p>
       )}
       {/* Display simulating state specifically */}
       {isSimulating && ( // Only show this message when simulation is happening
-        <p className="text-xs text-center text-yellow-300/80">
+        <p className="text-xs text-center text-cyan-200/80">
           Calculating Gas and Simulating Bid...
         </p>
       )}

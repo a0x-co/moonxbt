@@ -26,6 +26,7 @@ import {
 } from "wagmi";
 import { BidForm } from "./BidForm";
 import Image from 'next/image';
+import { FaRegClock, FaTrophy, FaCoins } from 'react-icons/fa';
 
 interface VideoAuctionSheetProps {
   isOpen: boolean;
@@ -45,8 +46,6 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const [bidTxHash, setBidTxHash] = useState<`0x${string}` | undefined>();
   const [wasConnected, setWasConnected] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [shouldShowSheet, setShouldShowSheet] = useState(isOpen);
-  const [bidAmount, setBidAmount] = useState<string>("0");
 
   // Use the custom hook for auction data
   const {
@@ -60,6 +59,16 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     lastAuctionAmount,
     lastAuctionResourceValue,
   } = useAuctionData();
+
+  // Parse lastAuctionResourceValue as JSON if possible
+  let parsedLastAuctionResourceValue: { url?: string; metadata?: string } | null = null;
+  if (lastAuctionResourceValue) {
+    try {
+      parsedLastAuctionResourceValue = JSON.parse(lastAuctionResourceValue);
+    } catch (e) {
+      parsedLastAuctionResourceValue = null;
+    }
+  }
 
   // Check A0x allowance
   const {
@@ -109,17 +118,10 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     if (wallet?.address && !wasConnected) {
       setWasConnected(true);
       setIsWalletModalOpen(false);
-      setTimeout(() => setShouldShowSheet(true), 500);
     } else if (!wallet?.address) {
       setWasConnected(false);
     }
   }, [wallet?.address, wasConnected]);
-
-  useEffect(() => {
-    if (!isWalletModalOpen) {
-      setShouldShowSheet(isOpen);
-    }
-  }, [isOpen, isWalletModalOpen]);
 
   // ---------- APPROVE TRANSACTION -------
   const {
@@ -131,7 +133,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     "A0X",
     AUCTION_CONTRACT_ADDRESS as `0x${string}`,
     true,
-    parseEther(bidAmount || "0"),
+    parseEther("0"),
     async (txHash) => {
       console.log("Approved", txHash);
       refetchAllowance();
@@ -151,7 +153,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       const erc20Interface = new ethers.Interface(erc20Abi);
       const approveDataPrivy = erc20Interface.encodeFunctionData("approve", [
         AUCTION_CONTRACT_ADDRESS as `0x${string}`,
-        parseEther(bidAmount || "0"),
+        parseEther("0"),
       ]);
 
       const approveDataWagmi = encodeFunctionData({
@@ -159,7 +161,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         functionName: "approve",
         args: [
           AUCTION_CONTRACT_ADDRESS as `0x${string}`,
-          parseEther(bidAmount || "0"),
+          parseEther("0"),
         ],
       });
 
@@ -386,159 +388,85 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
 
   return (
     <Sheet
-      open={shouldShowSheet}
+      open={isOpen}
       onOpenChange={(open) => {
         if (!open && !isWalletModalOpen) {
           onClose();
         }
-        setShouldShowSheet(open);
       }}
     >
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[900px] bg-[#1752F0] border-none p-6 overflow-y-auto"
+        className="w-full sm:max-w-[900px] bg-[#1752F0] border-none p-6 overflow-y-auto shadow-2xl"
       >
-        <SheetHeader>
-          <SheetTitle className="text-2xl font-bold text-white">
-            Exclusive Digital Item Auction
-          </SheetTitle>
-          {currentAuctionId !== undefined && (
-            <p className="text-sm text-white/70">
-              Auction #{currentAuctionId.toString()}
-            </p>
-          )}
-        </SheetHeader>
+        <div className="flex flex-col gap-8">
+          <SheetHeader>
+            <SheetTitle className="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-widest uppercase text-center">
+              Bid for MoonXBT's next video
+            </SheetTitle>
+            {currentAuctionId !== undefined && (
+              <p className="text-lg md:text-2xl font-mono text-white/80 text-center mt-2">
+                Auction #{currentAuctionId.toString()}
+              </p>
+            )}
+          </SheetHeader>
 
-        <div className="mt-6 space-y-6">
           {/* Auction Status Section */}
-          <div
-            className="rounded-xl p-6"
-            style={{
-              background: "rgba(30, 60, 180, 0.25)",
-              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
-              backdropFilter: "blur(8px)",
-              border: "1.5px solid rgba(255,255,255,0.12)",
-            }}
-          >
-            <h3 className="font-mono text-lg text-white/90 mb-4">
-              Current Auction Status
-            </h3>
-            {isLoadingAuctionData ? (
-              <p className="text-white/70">Loading auction data...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-center shadow-lg">
-                  <thead>
-                    <tr>
-                      <th
-                        className="px-6 py-3 rounded-tl-lg bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
-                        style={{ backdropFilter: "blur(2px)" }}
-                      >
-                        Time Remaining
-                      </th>
-                      <th
-                        className="px-6 py-3  bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
-                        style={{ backdropFilter: "blur(2px)" }}
-                      >
-                        Current Highest Bid
-                      </th>
-                      {parsedResourceValue?.url && (
-                        <th
-                          className="px-6 py-3 bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
-                          style={{ backdropFilter: "blur(2px)" }}
-                        >
-                          Current URL
-                        </th>
-                      )}
-                      {parsedResourceValue?.metadata &&
-                        parsedResourceValue.metadata !== "N/A" && (
-                          <th
-                            className="px-6 py-3 bg-white/20 text-white font-bold tracking-wide border-b border-r-2 border-white/20"
-                            style={{ backdropFilter: "blur(2px)" }}
-                          >
-                            Metadata
-                          </th>
-                        )}
-                      {currentBidder &&
-                        currentBidder !==
-                          "0x0000000000000000000000000000000000000000" && (
-                          <th
-                            className="px-6 py-3 rounded-tr-lg bg-white/20 text-white font-bold tracking-wide border-b border-white/20"
-                            style={{ backdropFilter: "blur(2px)" }}
-                          >
-                            Highest Bidder
-                          </th>
-                        )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="px-6 py-3 bg-white/10 rounded-bl-lg border-r-2 border-white/20">
-                        <span
-                          className="font-mono text-base text-white shadow-sm"
-                          style={{ backdropFilter: "blur(2px)" }}
-                        >
-                          {formattedTimeLeft}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3 bg-white/10 border-r-2 border-white/20">
-                        <span className="font-mono text-base text-white">
-                          {formattedBidAmount}
-                        </span>
-                      </td>
-                      {parsedResourceValue?.url && (
-                        <td className="px-6 py-3 bg-white/10 border-r-2 border-white/20">
-                          <a
-                            href={parsedResourceValue.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-base text-blue-200 hover:underline"
-                            style={{ backdropFilter: "blur(2px)" }}
-                          >
-                            {parsedResourceValue.url}
-                          </a>
-                        </td>
-                      )}
-                      {parsedResourceValue?.metadata &&
-                        parsedResourceValue.metadata !== "N/A" && (
-                          <td className="px-6 py-3 bg-white/10 border-r-2 border-white/20">
-                            <span
-                              className="font-mono text-base text-white/80"
-                              style={{ backdropFilter: "blur(2px)" }}
-                            >
-                              {parsedResourceValue.metadata}
-                            </span>
-                          </td>
-                        )}
-                      {currentBidder &&
-                        currentBidder !==
-                          "0x0000000000000000000000000000000000000000" && (
-                          <td className="px-6 py-3 bg-white/10 rounded-br-lg">
-                            <a
-                              href={`https://basescan.org/address/${currentBidder}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-base text-blue-200 hover:underline"
-                              style={{ backdropFilter: "blur(2px)" }}
-                            >
-                              {`${currentBidder.slice(
-                                0,
-                                6
-                              )}...${currentBidder.slice(-4)}`}
-                            </a>
-                          </td>
-                        )}
-                    </tr>
-                  </tbody>
-                </table>
+          <div className="rounded-2xl p-8 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1 flex flex-col items-center gap-4">
+              <div className="flex items-center gap-3">
+                <FaRegClock className="text-cyan-200 text-3xl" />
+                <span className="font-mono text-3xl md:text-5xl font-extrabold text-white tracking-widest">
+                  {isLoadingAuctionData ? '...' : formattedTimeLeft}
+                </span>
+              </div>
+              <span className="font-mono text-base text-white/70 uppercase tracking-widest">Time Remaining</span>
+            </div>
+            <div className="w-0.5 h-20 bg-white/20 hidden md:block" />
+            <div className="flex-1 flex flex-col items-center gap-4">
+              <div className="flex items-center gap-3">
+                <FaCoins className="text-cyan-200 text-3xl" />
+                <span className="font-mono text-3xl md:text-5xl font-extrabold text-white tracking-widest">
+                  {isLoadingAuctionData ? '...' : formattedBidAmount}
+                </span>
+              </div>
+              <span className="font-mono text-base text-white/70 uppercase tracking-widest">Current Bid</span>
+            </div>
+          </div>
+
+          {/* Current URL & Bidder */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {parsedResourceValue?.url && (
+              <div className="flex-1 bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-inner flex flex-col gap-2">
+                <span className="font-mono text-xs text-white/60 uppercase tracking-widest">Current URL</span>
+                <a
+                  href={parsedResourceValue.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-base md:text-lg text-white hover:underline break-all"
+                >
+                  {parsedResourceValue.url}
+                </a>
+              </div>
+            )}
+            {currentBidder && currentBidder !== "0x0000000000000000000000000000000000000000" && (
+              <div className="flex-1 bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-inner flex flex-col gap-2">
+                <span className="font-mono text-xs text-white/60 uppercase tracking-widest">Highest Bidder</span>
+                <a
+                  href={`https://basescan.org/address/${currentBidder}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-base md:text-lg text-white hover:underline"
+                >
+                  {`${currentBidder.slice(0, 6)}...${currentBidder.slice(-4)}`}
+                </a>
               </div>
             )}
           </div>
 
           {/* Wallet Connection and Bid Form Section */}
-          <div className="bg-[#1a237e]/20 rounded-lg p-4 space-y-4">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border-4 border-purple-400/60 shadow-[0_0_48px_#a259ff] flex flex-col gap-6">
             {renderWalletButton()}
-
             {wallet?.address && (
               <BidForm
                 isApproved={!!allowanceData && allowanceData > BigInt(0)}
@@ -548,12 +476,36 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 isWaitingApproval={isConfirmingApproval}
                 isWaitingBid={isConfirmingBid}
                 balanceOfA0X={formattedBalanceOfA0X}
-                bidAmount={bidAmount}
-                setBidAmount={setBidAmount}
+                bidAmount="0"
+                setBidAmount={(value) => {}}
                 handleRevokeApprovalClick={handleRevokeApprovalClick}
               />
             )}
           </div>
+
+          {/* Winner Section */}
+          {lastAuctionWinner && (
+            <div className="mt-4 bg-white/10 backdrop-blur-xl rounded-xl p-6 border border-white/20 shadow-lg flex flex-col gap-2 items-center">
+              <div className="flex items-center gap-2 mb-2">
+                <FaTrophy className="text-cyan-200 text-2xl" />
+                <span className="font-mono text-xl font-bold text-white uppercase tracking-widest">Winner</span>
+              </div>
+              <span className="font-mono text-base text-white/80">{`${lastAuctionWinner.slice(0, 6)}...${lastAuctionWinner.slice(-4)}`}</span>
+              {parsedLastAuctionResourceValue && parsedLastAuctionResourceValue.url && (
+                <a
+                  href={parsedLastAuctionResourceValue.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-base text-white hover:underline break-all"
+                >
+                  {parsedLastAuctionResourceValue.url}
+                </a>
+              )}
+              {lastAuctionAmount && (
+                <span className="font-mono text-lg text-white/80">Bid: {lastAuctionAmount}</span>
+              )}
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>
