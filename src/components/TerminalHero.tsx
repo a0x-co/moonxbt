@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaInstagram, FaTelegram, FaTiktok } from "react-icons/fa";
 import { WinnerDashboard } from "./WinnerDashboard";
 import MobileVideoDisplay from "./MobileVideoDisplay";
+import AirdropModal from "@/components/AirdropModal";
 
 interface TerminalLine {
   id: string;
@@ -79,6 +80,7 @@ const TerminalHero = () => {
   const router = useRouter();
   const [isAuctionOpen, setIsAuctionOpen] = useState(false);
   const [isWinnerDashboardOpen, setIsWinnerDashboardOpen] = useState(false);
+  const [isAirdropOpen, setIsAirdropOpen] = useState(false);
   const [currentBid, setCurrentBid] = useState("0.00");
   const [showMobileVideo, setShowMobileVideo] = useState(false);
   const [isLastWinner, setIsLastWinner] = useState(false);
@@ -407,13 +409,13 @@ const TerminalHero = () => {
 
         {/* Video Section */}
         <div className="hidden lg:block w-[400px] h-full relative">
-          <video
+          <Image
             className="absolute inset-0 w-full h-full object-cover"
-            src="/assets/moonxbt.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
+            src="/assets/moon-landing2.png"
+            alt="Moon Landing"
+            fill
+            style={{ objectFit: 'cover' }}
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1752F0] via-transparent to-transparent" />
         </div>
@@ -437,8 +439,8 @@ const TerminalHero = () => {
               </button>
             </div>
 
-            {/* Center - Bid Button or Winner Dashboard Button */}
-            <div className="order-first sm:order-none mb-4 sm:mb-0 flex max-md:flex-col gap-4 items-center">
+            {/* Center - Bid Button and Airdrop Button */}
+            <div className="order-first sm:order-none mb-4 sm:mb-0 flex flex-col sm:flex-row items-center gap-4">
               {isLastWinner && wallet?.address && (
                 <button
                   onClick={handleOpenWinnerDashboard}
@@ -461,6 +463,18 @@ const TerminalHero = () => {
                 <div className="relative flex items-center space-x-3">
                   <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
                     BID FOR TOMORROW'S VIDEO
+                  </span>
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                </div>
+              </button>
+              <button
+                onClick={() => setIsAirdropOpen(true)}
+                className="group relative overflow-hidden px-8 py-3 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl transform hover:scale-[1.02] transition-all duration-300"
+              >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                <div className="relative flex items-center space-x-3">
+                  <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
+                    AIRDROP
                   </span>
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 </div>
@@ -590,6 +604,11 @@ const TerminalHero = () => {
           console.log("Closing winner dashboard...");
           setIsWinnerDashboardOpen(false);
         }}
+      />
+
+      <AirdropModal
+        isOpen={isAirdropOpen}
+        onClose={() => setIsAirdropOpen(false)}
       />
 
       <style jsx global>{`
