@@ -316,7 +316,7 @@ const TerminalHero = () => {
           >
             <MobileVideoDisplay
               show={showMobileVideo}
-              videoUrl="https://storage.googleapis.com/a0x-mirror-storage/agents-videos/3e444822-7a6c-0e5d-a36d-7087fb23685b-1747847046886.mp4"
+              videoUrl="https://storage.googleapis.com/a0x-mirror-storage/agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747863974236.mp4"
             />
           </motion.div>
         </motion.div>
@@ -438,21 +438,21 @@ const TerminalHero = () => {
             </div>
 
             {/* Center - Bid Button or Winner Dashboard Button */}
-            <div className="order-first sm:order-none mb-4 sm:mb-0 flex gap-4 items-center">
-              {/* {isLastWinner && wallet?.address && ( */}
-              <button
-                onClick={handleOpenWinnerDashboard}
-                className="group relative overflow-hidden px-8 py-3 bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-xl transform hover:scale-[1.02] transition-all duration-300"
-              >
-                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                <div className="relative flex items-center space-x-3">
-                  <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
-                    WINNER DASHBOARD
-                  </span>
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                </div>
-              </button>
-              {/* )} */}
+            <div className="order-first sm:order-none mb-4 sm:mb-0 flex max-md:flex-col gap-4 items-center">
+              {isLastWinner && wallet?.address && (
+                <button
+                  onClick={handleOpenWinnerDashboard}
+                  className="group relative overflow-hidden px-8 py-3 bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-xl transform hover:scale-[1.02] transition-all duration-300"
+                >
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                  <div className="relative flex items-center space-x-3">
+                    <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
+                      WINNER DASHBOARD
+                    </span>
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  </div>
+                </button>
+              )}
               <button
                 onClick={handleBidVideo}
                 className="group relative overflow-hidden px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl transform hover:scale-[1.02] transition-all duration-300"
