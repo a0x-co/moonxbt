@@ -98,21 +98,21 @@ const MobileVideoDisplay = ({
     useAuctionData();
 
   return (
-    <div className="relative w-[330px] h-[650px] rounded-[40px] overflow-hidden shadow-2xl bg-gray-900 border-[8px] border-gray-800">
+    <div className="relative w-[250px] h-[500px] 2xl:w-[330px] 2xl:h-[650px] rounded-[40px] overflow-hidden shadow-2xl bg-gray-900 border-[8px] border-gray-800">
       {/* Notch del teléfono */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[140px] h-[24px] bg-gray-900 rounded-b-[16px] z-20"></div>
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[100px] 2xl:w-[140px] h-[24px] bg-gray-900 rounded-b-[16px] z-20"></div>
 
       {/* Barra de estado */}
       <div className="w-full h-[24px] bg-gradient-to-r from-blue-600 to-blue-700 flex justify-between items-center text-white text-sm px-6 z-10 relative">
-        <span>
+        <span className="text-xs 2xl:text-sm">
           {new Date().toLocaleTimeString("es-ES", {
             hour: "2-digit",
             minute: "2-digit",
           })}
         </span>
         <div className="flex space-x-1 items-center">
-          <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
-          <FaWifi className="h-4 w-4" />
+          <div className="h-2 w-2 2xl:h-2.5 2xl:w-2.5 rounded-full bg-green-500 animate-pulse"></div>
+          <FaWifi className="h-3 w-3 2xl:h-4 2xl:w-4" />
         </div>
       </div>
 
@@ -168,7 +168,7 @@ const MobileVideoDisplay = ({
             <video
               ref={videoRef}
               src={videoUrl}
-              className="h-full w-full object-cover -mt-20"
+              className="h-full w-full -mt-[75px]"
               autoPlay
               loop
               muted={isMuted}
