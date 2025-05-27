@@ -136,7 +136,7 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                       [CLOSE]
                     </button>
                     <a
-                      href="https://airdrop.moonxbt.fun"
+                      href="https://farcaster.xyz/miniapps/lUdZ2BEBiJf0/moonxbt-airdrop"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-8 py-2 bg-[#1752F0] hover:bg-[#2563eb] text-white font-mono border-2 border-white/30 transition-colors"
