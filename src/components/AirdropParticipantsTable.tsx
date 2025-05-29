@@ -541,7 +541,7 @@ export function AirdropParticipantsTable() {
 
   // Si todo está bien, mostrar la tabla
   return (
-    <div className="space-y-4 bg-[#1752F0] p-8 rounded-2xl">
+    <div className="space-y-4 bg-[#0f2f88] p-8 rounded-2xl">
       <div className="flex flex-col gap-4">
         <h2 className="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-widest uppercase text-center">
           Airdrop Participants
@@ -668,7 +668,7 @@ export function AirdropParticipantsTable() {
                   </TableCell>
                   <TableCell>
                     <Link
-                      href={`https://farcaster/${participant.username}`}
+                      href={`https://farcaster.xyz/${participant.username}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-green-200 hover:text-green-100"
@@ -681,16 +681,20 @@ export function AirdropParticipantsTable() {
                     {participant.displayName}
                   </TableCell>
                   <TableCell className="font-mono text-sm">
-                    <Link
-                      href={`https://basescan.org/address/${participant.walletAddress}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-green-200 hover:text-green-100"
-                    >
-                      {participant.walletAddress.slice(0, 6)}...
-                      {participant.walletAddress.slice(-4)}
-                      <ExternalLink className="w-3 h-3" />
-                    </Link>
+                    {participant.walletAddress !== undefined ? (
+                      <Link
+                        href={`https://basescan.org/address/${participant.walletAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-green-200 hover:text-green-100"
+                      >
+                        {participant.walletAddress.slice(0, 6)}...
+                        {participant.walletAddress.slice(-4)}
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    ) : (
+                      <span className="text-white/50">Not linked</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-white/90">
                     {participant.points.total}
