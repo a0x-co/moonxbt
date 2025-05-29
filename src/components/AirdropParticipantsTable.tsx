@@ -712,17 +712,21 @@ export function AirdropParticipantsTable() {
                           const isVerifiedByAdmin =
                             participant.tasks[task.id]?.verifiedByAdmin ||
                             false;
-                          const platformUsername =
+                          let platformUsername =
                             participant.linkedUsernames?.[
                               task.id.replace("follow-", "")
                             ];
+                          if (task.id === "join-telegram") {
+                            platformUsername =
+                              participant.tasks[task.id]?.telegramUsername;
+                          }
 
                           return (
                             <Tooltip key={task.id}>
                               <TooltipTrigger>
                                 <div className="flex items-center gap-1">
                                   {task.getProfileUrl && platformUsername ? (
-                                    <a
+                                    <Link
                                       href={task.getProfileUrl(
                                         platformUsername
                                       )}
@@ -732,7 +736,7 @@ export function AirdropParticipantsTable() {
                                       className="cursor-pointer hover:opacity-80"
                                     >
                                       <div
-                                        className={`${
+                                        className={`border border-cyan-200 rounded-sm p-0.5 ${
                                           isCompleted
                                             ? "text-cyan-200"
                                             : "text-white/40"
@@ -740,7 +744,7 @@ export function AirdropParticipantsTable() {
                                       >
                                         {task.icon}
                                       </div>
-                                    </a>
+                                    </Link>
                                   ) : (
                                     <div
                                       className={`${
