@@ -118,36 +118,6 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                     <div className="text-white text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words font-orbitron">
                       [ PARTICIPATION_STEPS ]
                     </div>
-                    <div className="space-y-1 sm:space-y-2">
-                      <div className="flex items-center gap-1 sm:gap-4">
-                        <span className="text-[#4ade80] font-orbitron text-xs sm:text-xl">
-                          [ 1 ]
-                        </span>
-                        <span className="text-white font-orbitron text-xs sm:text-2xl">
-                          &gt; Visit MoonXBT Mini-app
-                        </span>
-                      </div>
-                      <p className="text-white/60  text-[10px] sm:text-xl ml-2 sm:ml-10 mb-2 sm:mb-6 break-words">
-                        Connect wallet & verify socials
-                      </p>
-                      <div className="flex items-center gap-1 sm:gap-4">
-                        <span className="text-[#4ade80] font-orbitron text-xs sm:text-xl">
-                          [ 2 ]
-                        </span>
-                        <span className="text-white font-orbitron text-xs sm:text-2xl">
-                          &gt; Follow MoonXBT
-                        </span>
-                      </div>
-                      <p className="text-white/60  text-[10px] sm:text-xl ml-2 sm:ml-10 mb-2 sm:mb-6 break-words">
-                        Maximize rewards by following Moon on all her socials
-                      </p>
-                    </div>
-                  </div>
-                  {/* Participation Steps */}
-                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
-                    <div className="text-white text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words font-orbitron">
-                      [ PARTICIPATION_STEPS ]
-                    </div>
                     <div className="grid grid-cols-[40px_1fr] grid-rows-2 gap-4 justify-start">
                       <span className="text-[#4ade80] text-center font-orbitron text-xs sm:text-xl">
                         [ 1 ]
