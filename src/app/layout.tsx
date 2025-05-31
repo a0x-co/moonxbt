@@ -1,6 +1,6 @@
 // Next
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk, Press_Start_2P, Orbitron } from "next/font/google";
 import { headers } from "next/headers";
 
 // Privy
@@ -14,7 +14,9 @@ import "./globals.css";
 // Auth
 import { getServerSession } from "./api/auth/options";
 
-const inter = Inter({ subsets: ["latin"] });
+// const inter = Inter({ subsets: ["latin"] });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], display: "swap", variable: "--font-space-grotesk" });
+const orbitron = Orbitron({ subsets: ["latin"], display: "swap", variable: "--font-orbitron", weight: "400" });
 
 export const metadata: Metadata = {
   title: "MoonXBT",
@@ -33,7 +35,7 @@ export default async function RootLayout({
   const initialState = cookieToInitialState(config, cookieStr);
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${orbitron.variable} ${spaceGrotesk.variable} font-spaceGrotesk antialiased`}>
         <Web3ModalProvider initialState={initialState} session={session}>
           {children}
         </Web3ModalProvider>

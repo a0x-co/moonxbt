@@ -1,6 +1,6 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
-import Image from 'next/image';
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import Image from "next/image";
 
 interface AirdropModalProps {
   isOpen: boolean;
@@ -11,17 +11,22 @@ const asciiLogoLines = [
   "                                                /$$   /$$ /$$$$$$$  /$$$$$$$$",
   "                                               | $$  / $$| $$__  $$|__  $$__/",
   " /$$$$$$/$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ |  $$/ $$/| $$    $$   | $$",
-  "| $$_  $$_  $$ /$$__  $$ /$$__  $$| $$__  $$    $$$$/ | $$$$$$$    | $$",   
-  "| $$   $$   $$| $$    $$| $$    $$| $$    $$  >$$  $$ | $$__  $$   | $$",   
-  "| $$ | $$ | $$| $$  | $$| $$  | $$| $$  | $$ /$$/   $$| $$    $$   | $$",  
-  "| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",   
-  "|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",                                                                                                                         
-]; 
+  "| $$_  $$_  $$ /$$__  $$ /$$__  $$| $$__  $$    $$$$/ | $$$$$$$    | $$",
+  "| $$   $$   $$| $$    $$| $$    $$| $$    $$  >$$  $$ | $$__  $$   | $$",
+  "| $$ | $$ | $$| $$  | $$| $$  | $$| $$  | $$ /$$/   $$| $$    $$   | $$",
+  "| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",
+  "|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",
+];
 
 const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" open={isOpen} onClose={onClose}>
+      <Dialog
+        as="div"
+        className="relative z-50"
+        open={isOpen}
+        onClose={onClose}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -44,9 +49,15 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-[98vw] sm:max-w-2xl mx-1 sm:mx-2 transform overflow-y-auto overflow-x-hidden max-h-[100dvh] bg-[#1752F0] border-2 border-white/20 font-mono text-white relative">
+              <Dialog.Panel className="w-full max-w-[98vw] sm:max-w-2xl mx-1 sm:mx-2 transform overflow-y-auto overflow-x-hidden max-h-[100dvh] bg-[#1752F0] border-2 border-white/20  text-white relative">
                 {/* Scanline overlay */}
-                <div className="absolute inset-0 pointer-events-none z-20" style={{background: 'repeating-linear-gradient(to bottom, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 4px)'}} />
+                <div
+                  className="absolute inset-0 pointer-events-none z-20"
+                  style={{
+                    background:
+                      "repeating-linear-gradient(to bottom, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 4px)",
+                  }}
+                />
                 {/* Background video */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                   <video
@@ -64,7 +75,9 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                     <div className="w-4 h-4 bg-white/20 flex items-center justify-center">
                       <span className="text-white text-xs">_</span>
                     </div>
-                    <span className="text-white font-mono text-sm tracking-wide">MOONXBT AIRDROP</span>
+                    <span className="text-white  text-sm tracking-wide">
+                      MOONXBT AIRDROP
+                    </span>
                   </div>
                   <button
                     onClick={onClose}
@@ -90,40 +103,89 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                   </pre>
                   {/* Token Distribution */}
                   <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
-                    <div className="text-white font-mono text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words">[TOKEN_DISTRIBUTION]</div>
-                    <div
-                      className="font-[\'Orbitron\',_monospace] text-[clamp(24px,18vw,80px)] sm:text-[clamp(48px,14vw,180px)] font-extrabold tracking-widest mb-2 sm:mb-6 special-twenty text-center break-words"
-                    >
+                    <div className="text-white text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words font-orbitron">
+                      [ TOKEN_DISTRIBUTION ]
+                    </div>
+                    <div className="font-[\'Orbitron\',_monospace] text-[clamp(24px,18vw,80px)] sm:text-[clamp(48px,14vw,180px)] font-extrabold tracking-widest mb-2 sm:mb-6 special-twenty text-center break-words">
                       20%
                     </div>
-                    <div className="text-white/80 font-mono text-xs sm:text-2xl text-center break-words">of total supply for airdrop</div>
+                    <div className="text-white/80  text-xs sm:text-2xl text-center break-words">
+                      of total supply for airdrop
+                    </div>
                   </div>
                   {/* Participation Steps */}
                   <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
-                    <div className="text-white font-mono text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words">[PARTICIPATION_STEPS]</div>
-                    <div className="space-y-1 sm:space-y-7">
+                    <div className="text-white text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words font-orbitron">
+                      [ PARTICIPATION_STEPS ]
+                    </div>
+                    <div className="space-y-1 sm:space-y-2">
                       <div className="flex items-center gap-1 sm:gap-4">
-                        <span className="text-[#4ade80] font-mono text-xs sm:text-2xl">[1]</span>
-                        <span className="text-white font-mono text-xs sm:text-2xl">&gt; Visit MoonXBT Mini-app</span>
+                        <span className="text-[#4ade80] font-orbitron text-xs sm:text-xl">
+                          [ 1 ]
+                        </span>
+                        <span className="text-white font-orbitron text-xs sm:text-2xl">
+                          &gt; Visit MoonXBT Mini-app
+                        </span>
                       </div>
-                      <div className="text-white/60 font-mono text-[10px] sm:text-xl ml-2 sm:ml-10 mb-1 sm:mb-3 break-words">
+                      <p className="text-white/60  text-[10px] sm:text-xl ml-2 sm:ml-10 mb-2 sm:mb-6 break-words">
                         Connect wallet & verify socials
-                      </div>
+                      </p>
                       <div className="flex items-center gap-1 sm:gap-4">
-                        <span className="text-[#4ade80] font-mono text-xs sm:text-2xl">[2]</span>
-                        <span className="text-white font-mono text-xs sm:text-2xl">&gt; Follow MoonXBT</span>
+                        <span className="text-[#4ade80] font-orbitron text-xs sm:text-xl">
+                          [ 2 ]
+                        </span>
+                        <span className="text-white font-orbitron text-xs sm:text-2xl">
+                          &gt; Follow MoonXBT
+                        </span>
                       </div>
-                      <div className="text-white/60 font-mono text-[10px] sm:text-xl ml-2 sm:ml-10 break-words">
+                      <p className="text-white/60  text-[10px] sm:text-xl ml-2 sm:ml-10 mb-2 sm:mb-6 break-words">
                         Maximize rewards by following Moon on all her socials
+                      </p>
+                    </div>
+                  </div>
+                  {/* Participation Steps */}
+                  <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
+                    <div className="text-white text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words font-orbitron">
+                      [ PARTICIPATION_STEPS ]
+                    </div>
+                    <div className="grid grid-cols-[40px_1fr] grid-rows-2 gap-4 justify-start">
+                      <span className="text-[#4ade80] text-center font-orbitron text-xs sm:text-xl">
+                        [ 1 ]
+                      </span>
+                      <div className="flex flex-col items-start gap-1 sm:gap-4">
+                        <span className="text-white font-orbitron text-xs sm:text-2xl !leading-none">
+                          &gt; Visit MoonXBT Mini-app
+                        </span>
+                        <p className="text-white/60  text-[10px] sm:text-xl break-words">
+                          Connect wallet & verify socials
+                        </p>
+                      </div>
+                      <span className="text-[#4ade80] text-center font-orbitron text-xs sm:text-xl">
+                        [ 2 ]
+                      </span>
+                      <div className="flex flex-col items-start gap-1 sm:gap-4">
+                        <span className="text-white font-orbitron text-xs sm:text-2xl !leading-none">
+                          &gt; Follow MoonXBT
+                        </span>
+                        <p className="text-white/60  text-[10px] sm:text-xl break-words">
+                          Maximize rewards by following Moon on all her socials
+                        </p>
                       </div>
                     </div>
                   </div>
                   {/* Why Follow Moon */}
                   <div className="border-2 border-white/30 bg-[#1752F0]/80 p-1 sm:p-6 mb-1 sm:mb-4">
-                    <div className="text-white font-mono text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words">[WHY_FOLLOW_MOON]</div>
-                    <div className="text-white/80 font-mono space-y-1 sm:space-y-3 text-[10px] sm:text-2xl text-center break-words">
-                      <p>&gt; MoonXBT is an AI influencer creating 1 video per day</p>
-                      <p>&gt; Her objective is to help projects grow and succeed</p>
+                    <div className="text-white font-orbitron text-sm sm:text-3xl mb-2 sm:mb-6 text-center break-words">
+                      [ WHY_FOLLOW_MOON ]
+                    </div>
+                    <div className="text-white/80 font-orbitron space-y-1 sm:space-y-3 text-[10px] sm:text-2xl text-left break-words">
+                      <p>
+                        &gt; MoonXBT is an AI influencer creating 1 video per
+                        day
+                      </p>
+                      <p>
+                        &gt; Her objective is to help projects grow and succeed
+                      </p>
                       <p>&gt; More followers = more exposure = more success</p>
                     </div>
                   </div>
@@ -131,17 +193,17 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                   <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
                     <button
                       onClick={onClose}
-                      className="px-8 py-2 bg-[#1752F0] hover:bg-[#2563eb] text-white font-mono border-2 border-white/30 transition-colors"
+                      className="px-8 py-2 bg-[#1752F0] hover:bg-[#2563eb] text-white font-orbitron text-sm sm:text-2xl border-2 border-white/30 transition-colors"
                     >
-                      [CLOSE]
+                      [ CLOSE ]
                     </button>
                     <a
                       href="https://farcaster.xyz/miniapps/lUdZ2BEBiJf0/moonxbt-airdrop"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-8 py-2 bg-[#1752F0] hover:bg-[#2563eb] text-white font-mono border-2 border-white/30 transition-colors"
+                      className="px-8 py-2 bg-[#1752F0] hover:bg-[#2563eb] text-white font-orbitron text-sm sm:text-2xl border-2 border-white/30 transition-colors"
                     >
-                      [VISIT_MINIAPP]
+                      [ VISIT_MINIAPP ]
                     </a>
                   </div>
                   {/* Blinking cursor */}
@@ -150,25 +212,30 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                   </div>
                 </div>
                 <style jsx global>{`
-                  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+                  @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap");
                   .special-twenty {
-                    background: linear-gradient(90deg, #00fff0 0%, #00bfff 100%);
+                    background: linear-gradient(
+                      90deg,
+                      #00fff0 0%,
+                      #00bfff 100%
+                    );
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
-                    text-shadow:
-                      0 2px 8px #00fff088,
-                      0 0px 1px #fff,
-                      0 0 0 #000;
+                    text-shadow: 0 2px 8px #00fff088, 0 0px 1px #fff, 0 0 0 #000;
                     letter-spacing: 0.12em;
                     position: relative;
-                    font-family: 'Orbitron', monospace !important;
+                    font-family: "Orbitron", monospace !important;
                   }
                   .special-twenty::after {
-                    content: '';
+                    content: "";
                     display: block;
                     width: 100%;
                     height: 8px;
-                    background: linear-gradient(90deg, #00fff0 0%, #00bfff 100%);
+                    background: linear-gradient(
+                      90deg,
+                      #00fff0 0%,
+                      #00bfff 100%
+                    );
                     opacity: 0.2;
                     filter: blur(6px);
                     position: absolute;
@@ -178,16 +245,28 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                     border-radius: 8px;
                   }
                   @keyframes bob {
-                    0% { transform: translateY(0) rotate(0deg); }
-                    50% { transform: translateY(-8px) rotate(8deg); }
-                    100% { transform: translateY(0) rotate(0deg); }
+                    0% {
+                      transform: translateY(0) rotate(0deg);
+                    }
+                    50% {
+                      transform: translateY(-8px) rotate(8deg);
+                    }
+                    100% {
+                      transform: translateY(0) rotate(0deg);
+                    }
                   }
                   .animate-bob {
                     animation: bob 2.8s ease-in-out infinite;
                   }
                   @keyframes blink {
-                    0%, 50% { opacity: 1; }
-                    51%, 100% { opacity: 0; }
+                    0%,
+                    50% {
+                      opacity: 1;
+                    }
+                    51%,
+                    100% {
+                      opacity: 0;
+                    }
                   }
                   .animate-blink {
                     animation: blink 1s steps(1) infinite;
@@ -202,4 +281,4 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
   );
 };
 
-export default AirdropModal; 
+export default AirdropModal;

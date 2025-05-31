@@ -25,8 +25,8 @@ import {
   useWaitForTransactionReceipt,
 } from "wagmi";
 import { BidForm } from "./BidForm";
-import Image from 'next/image';
-import { FaRegClock, FaTrophy, FaCoins } from 'react-icons/fa';
+import Image from "next/image";
+import { FaRegClock, FaTrophy, FaCoins } from "react-icons/fa";
 
 interface VideoAuctionSheetProps {
   isOpen: boolean;
@@ -61,7 +61,10 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   } = useAuctionData();
 
   // Parse lastAuctionResourceValue as JSON if possible
-  let parsedLastAuctionResourceValue: { url?: string; metadata?: string } | null = null;
+  let parsedLastAuctionResourceValue: {
+    url?: string;
+    metadata?: string;
+  } | null = null;
   if (lastAuctionResourceValue) {
     try {
       parsedLastAuctionResourceValue = JSON.parse(lastAuctionResourceValue);
@@ -159,10 +162,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       const approveDataWagmi = encodeFunctionData({
         abi: erc20Abi,
         functionName: "approve",
-        args: [
-          AUCTION_CONTRACT_ADDRESS as `0x${string}`,
-          parseEther("0"),
-        ],
+        args: [AUCTION_CONTRACT_ADDRESS as `0x${string}`, parseEther("0")],
       });
 
       if (!user) {
@@ -316,7 +316,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         <button
           onClick={handleConnectClick}
           type="button"
-          className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white font-mono text-sm rounded-lg border border-white/10 transition-all duration-300"
+          className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white  text-sm rounded-lg border border-white/10 transition-all duration-300"
           disabled={disableLogin}
         >
           Connect Wallet
@@ -325,9 +325,15 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         <button
           onClick={handleChainClick}
           type="button"
-          className="w-full py-2.5 px-4 bg-red-500/40 hover:bg-red-500/60 text-white font-mono text-sm rounded-lg border border-white/10 transition-all duration-300"
+          className="flex items-center justify-center gap-2 text-center w-full py-2.5 px-4 bg-[#0466c8] hover:bg-[#0466c8]/60 text-white text-sm rounded-lg border border-white/10 transition-all duration-300"
         >
-          Change To Base
+          Change To Base{" "}
+          <Image
+            src="/assets/Base_Network_Logo.svg"
+            alt="Base"
+            width={20}
+            height={20}
+          />
         </button>
       ) : (
         <div className="bg-[#1a237e]/20 rounded-lg p-3 flex items-center justify-between">
@@ -342,7 +348,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-            <span className="font-mono text-sm text-white/80">
+            <span className=" text-sm text-white/80">
               {wallet?.address.slice(0, 6)}...{wallet?.address.slice(-4)}
             </span>
             {/* <svg
@@ -364,7 +370,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             onClick={handleDisconnect}
             className="text-white/50 hover:text-white/80 transition-colors flex items-center gap-2"
           >
-            <span className="font-mono text-sm">Disconnect</span>
+            <span className=" text-sm">Disconnect</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -401,11 +407,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       >
         <div className="flex flex-col gap-8">
           <SheetHeader>
-            <SheetTitle className="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-widest uppercase text-center">
+            <SheetTitle className="text-4xl font-extrabold  text-white tracking-widest uppercase text-center font-orbitron">
               Bid for MoonXBT's next video
             </SheetTitle>
             {currentAuctionId !== undefined && (
-              <p className="text-lg md:text-2xl font-mono text-white/80 text-center mt-2">
+              <p className="text-lg md:text-2xl  text-white/80 text-center mt-2">
                 Auction #{currentAuctionId.toString()}
               </p>
             )}
@@ -416,21 +422,25 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             <div className="flex-1 flex flex-col items-center gap-4">
               <div className="flex items-center gap-3">
                 <FaRegClock className="text-cyan-200 text-3xl" />
-                <span className="font-mono text-3xl md:text-5xl font-extrabold text-white tracking-widest">
-                  {isLoadingAuctionData ? '...' : formattedTimeLeft}
+                <span className=" text-3xl md:text-5xl font-extrabold text-white tracking-widest">
+                  {isLoadingAuctionData ? "..." : formattedTimeLeft}
                 </span>
               </div>
-              <span className="font-mono text-base text-white/70 uppercase tracking-widest">Time Remaining</span>
+              <span className=" text-base text-white/70 uppercase tracking-widest">
+                Time Remaining
+              </span>
             </div>
             <div className="w-0.5 h-20 bg-white/20 hidden md:block" />
             <div className="flex-1 flex flex-col items-center gap-4">
               <div className="flex items-center gap-3">
                 <FaCoins className="text-cyan-200 text-3xl" />
-                <span className="font-mono text-3xl md:text-5xl font-extrabold text-white tracking-widest">
-                  {isLoadingAuctionData ? '...' : formattedBidAmount}
+                <span className=" text-3xl md:text-5xl font-extrabold text-white tracking-widest">
+                  {isLoadingAuctionData ? "..." : formattedBidAmount}
                 </span>
               </div>
-              <span className="font-mono text-base text-white/70 uppercase tracking-widest">Current Bid</span>
+              <span className=" text-base text-white/70 uppercase tracking-widest">
+                Current Bid
+              </span>
             </div>
           </div>
 
@@ -438,34 +448,42 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
           <div className="flex flex-col md:flex-row gap-4">
             {parsedResourceValue?.url && (
               <div className="flex-1 bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-inner flex flex-col gap-2">
-                <span className="font-mono text-xs text-white/60 uppercase tracking-widest">Current URL</span>
+                <span className=" text-xs text-white/60 uppercase tracking-widest">
+                  Current URL
+                </span>
                 <a
                   href={parsedResourceValue.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-base md:text-lg text-white hover:underline break-all"
+                  className=" text-base md:text-lg text-white hover:underline break-all"
                 >
                   {parsedResourceValue.url}
                 </a>
               </div>
             )}
-            {currentBidder && currentBidder !== "0x0000000000000000000000000000000000000000" && (
-              <div className="flex-1 bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-inner flex flex-col gap-2">
-                <span className="font-mono text-xs text-white/60 uppercase tracking-widest">Highest Bidder</span>
-                <a
-                  href={`https://basescan.org/address/${currentBidder}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-base md:text-lg text-white hover:underline"
-                >
-                  {`${currentBidder.slice(0, 6)}...${currentBidder.slice(-4)}`}
-                </a>
-              </div>
-            )}
+            {currentBidder &&
+              currentBidder !==
+                "0x0000000000000000000000000000000000000000" && (
+                <div className="flex-1 bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-inner flex flex-col gap-2">
+                  <span className=" text-xs text-white/60 uppercase tracking-widest">
+                    Highest Bidder
+                  </span>
+                  <a
+                    href={`https://basescan.org/address/${currentBidder}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className=" text-base md:text-lg text-white hover:underline"
+                  >
+                    {`${currentBidder.slice(0, 6)}...${currentBidder.slice(
+                      -4
+                    )}`}
+                  </a>
+                </div>
+              )}
           </div>
 
           {/* Wallet Connection and Bid Form Section */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border-4 border-purple-400/60 shadow-[0_0_48px_#a259ff] flex flex-col gap-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-[0_0_48px_#3a0ca3] flex flex-col gap-6">
             {renderWalletButton()}
             {wallet?.address && (
               <BidForm
@@ -488,21 +506,29 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             <div className="mt-4 bg-white/10 backdrop-blur-xl rounded-xl p-6 border border-white/20 shadow-lg flex flex-col gap-2 items-center">
               <div className="flex items-center gap-2 mb-2">
                 <FaTrophy className="text-cyan-200 text-2xl" />
-                <span className="font-mono text-xl font-bold text-white uppercase tracking-widest">Winner</span>
+                <span className=" text-xl font-bold text-white uppercase tracking-widest">
+                  Winner
+                </span>
               </div>
-              <span className="font-mono text-base text-white/80">{`${lastAuctionWinner.slice(0, 6)}...${lastAuctionWinner.slice(-4)}`}</span>
-              {parsedLastAuctionResourceValue && parsedLastAuctionResourceValue.url && (
-                <a
-                  href={parsedLastAuctionResourceValue.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-base text-white hover:underline break-all"
-                >
-                  {parsedLastAuctionResourceValue.url}
-                </a>
-              )}
+              <span className=" text-base text-white/80">{`${lastAuctionWinner.slice(
+                0,
+                6
+              )}...${lastAuctionWinner.slice(-4)}`}</span>
+              {parsedLastAuctionResourceValue &&
+                parsedLastAuctionResourceValue.url && (
+                  <a
+                    href={parsedLastAuctionResourceValue.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className=" text-base text-white hover:underline break-all"
+                  >
+                    {parsedLastAuctionResourceValue.url}
+                  </a>
+                )}
               {lastAuctionAmount && (
-                <span className="font-mono text-lg text-white/80">Bid: {lastAuctionAmount}</span>
+                <span className=" text-lg text-white/80">
+                  Bid: {lastAuctionAmount}
+                </span>
               )}
             </div>
           )}

@@ -349,15 +349,15 @@ export function AirdropParticipantsTable() {
     return ALLOWED_WALLETS.includes(user.wallet.address.toLowerCase());
   }, [authenticated, user?.wallet?.address]);
 
-  if (!ready) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><p className="text-lg md:text-2xl font-mono text-white/80 text-center">Loading authentication...</p></div>;
-  if (!authenticated) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><h2 className="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-widest uppercase text-center">Restricted Access</h2><p className="text-lg md:text-2xl font-mono text-white/80 text-center">Please connect your wallet to access this view.</p><Button onClick={handleConnectClick} className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white font-mono text-sm rounded-lg border border-white/10 transition-all duration-300">Connect Wallet</Button></div>;
-  if (!isWalletAllowed) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><h2 className="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-widest uppercase text-center">Access Denied</h2><p className="text-lg md:text-2xl font-mono text-white/80 text-center">Your wallet is not authorized to access this view.</p><Button variant="outline" onClick={handleDisconnect} className="w-full py-2.5 px-4 bg-red-500/40 hover:bg-red-500/60 text-white font-mono text-sm rounded-lg border border-white/10 transition-all duration-300">Disconnect</Button></div>;
-  if (error && !loading) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><h2 className="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-widest uppercase text-center">Error</h2><p className="text-lg md:text-2xl font-mono text-white/80 text-center">{error}</p><Button onClick={() => fetchParticipants()} className="bg-white/20">Retry</Button></div>;
+  if (!ready) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><p className="text-lg md:text-2xl  text-white/80 text-center">Loading authentication...</p></div>;
+  if (!authenticated) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><h2 className="text-4xl md:text-5xl font-extrabold  text-white tracking-widest uppercase text-center">Restricted Access</h2><p className="text-lg md:text-2xl  text-white/80 text-center">Please connect your wallet to access this view.</p><Button onClick={handleConnectClick} className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white  text-sm rounded-lg border border-white/10 transition-all duration-300">Connect Wallet</Button></div>;
+  if (!isWalletAllowed) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><h2 className="text-4xl md:text-5xl font-extrabold  text-white tracking-widest uppercase text-center">Access Denied</h2><p className="text-lg md:text-2xl  text-white/80 text-center">Your wallet is not authorized to access this view.</p><Button variant="outline" onClick={handleDisconnect} className="w-full py-2.5 px-4 bg-red-500/40 hover:bg-red-500/60 text-white  text-sm rounded-lg border border-white/10 transition-all duration-300">Disconnect</Button></div>;
+  if (error && !loading) return <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-[#1752F0] p-8 rounded-2xl"><h2 className="text-4xl md:text-5xl font-extrabold  text-white tracking-widest uppercase text-center">Error</h2><p className="text-lg md:text-2xl  text-white/80 text-center">{error}</p><Button onClick={() => fetchParticipants()} className="bg-white/20">Retry</Button></div>;
 
   return (
     <div className="space-y-4 bg-[#0f2f88] p-8 rounded-2xl">
       <div className="flex flex-col gap-4">
-        <h2 className="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-widest uppercase text-center">
+        <h2 className="text-4xl md:text-5xl font-extrabold  text-white tracking-widest uppercase text-center">
           Airdrop Participants
         </h2>
 
@@ -420,7 +420,7 @@ export function AirdropParticipantsTable() {
                       <TableCell className="text-white/90">{participant.fid}</TableCell>
                       <TableCell><Link href={`https://warpcast.com/${participant.username}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-200 hover:text-green-100">{participant.username} <ExternalLink className="w-3 h-3" /></Link></TableCell>
                       <TableCell className="text-white/90">{participant.displayName}</TableCell>
-                      <TableCell className="font-mono text-sm">
+                      <TableCell className=" text-sm">
                         {participant.walletAddress ? <Link href={`https://basescan.org/address/${participant.walletAddress}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-200 hover:text-green-100">{participant.walletAddress.slice(0, 6)}...{participant.walletAddress.slice(-4)}<ExternalLink className="w-3 h-3" /></Link> : <span className="text-white/50">Not linked</span>}
                       </TableCell>
                       <TableCell className="text-white/90">{participant.points.total}</TableCell>
@@ -475,7 +475,7 @@ export function AirdropParticipantsTable() {
 
         <Dialog open={bulkUpdateOpen} onOpenChange={setBulkUpdateOpen}>
           <DialogContent className="max-w-3xl bg-[#1752F0] border-white/20 text-white">
-            <DialogHeader><DialogTitle className="text-2xl font-bold font-mono text-white">Bulk Update Tasks</DialogTitle><DialogDescription className="text-white/80">Paste a list of {bulkPlatform || "platform"} usernames (one per line) to mark their tasks as completed. These usernames should match the {bulkPlatform || "platform"} usernames linked to their Farcaster accounts. Participants with already completed tasks will be automatically excluded.</DialogDescription></DialogHeader>
+            <DialogHeader><DialogTitle className="text-2xl font-bold  text-white">Bulk Update Tasks</DialogTitle><DialogDescription className="text-white/80">Paste a list of {bulkPlatform || "platform"} usernames (one per line) to mark their tasks as completed. These usernames should match the {bulkPlatform || "platform"} usernames linked to their Farcaster accounts. Participants with already completed tasks will be automatically excluded.</DialogDescription></DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2"><label className="text-sm font-medium text-white/90">Platform</label>
                 <Select value={bulkPlatform} onValueChange={setBulkPlatform}><SelectTrigger className="bg-white/10 border-white/20 text-white"><SelectValue placeholder="Select platform" /></SelectTrigger>

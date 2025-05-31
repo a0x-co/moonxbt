@@ -159,7 +159,8 @@ export function useAuctionData(): AuctionData {
     currentResourceValue,
     parsedResourceValue: parseResourceValue(currentResourceValue),
     isLoading: isLoadingAuctionContracts || isLoadingBid,
-    lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
+    // lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
+    lastAuctionWinner: "0xa2b0405506b13f180e83a66a9903a839b6cbcecd", // for demo purposes
     lastAuctionAmount: lastAuctionAmount,
     lastAuctionResourceValue: lastAuctionResourceValue,
     refetchAuctionData,

@@ -289,7 +289,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
                   border: "1.5px solid rgba(255,255,255,0.12)",
                 }}
               >
-                <h3 className="font-mono text-lg text-white/90 mb-4">
+                <h3 className=" text-lg text-white/90 mb-4">
                   Generate Promotional Video
                 </h3>
 
@@ -378,7 +378,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
                   <button
                     onClick={handleGenerateVideo}
                     disabled={isLoading}
-                    className={`w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white font-mono text-sm rounded-lg border border-white/10 transition-all duration-300 ${
+                    className={`w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white  text-sm rounded-lg border border-white/10 transition-all duration-300 ${
                       isLoading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
@@ -392,7 +392,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
               {selectedVideoUrl ? (
                 <div className="flex items-center justify-center min-h-[400px] relative">
                   <button
-                    className="absolute top-0 left-0 px-4 py-2 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white rounded-lg border border-white/10 font-mono text-sm self-center"
+                    className="absolute top-0 left-0 px-4 py-2 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white rounded-lg border border-white/10  text-sm self-center"
                     onClick={() => setSelectedVideoUrl(null)}
                   >
                     ← Back
@@ -414,7 +414,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
                   }}
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-mono text-lg text-white/90">
+                    <h3 className=" text-lg text-white/90">
                       Your Promotional Videos
                     </h3>
                     <button
@@ -471,7 +471,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
                             }}
                           />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                            <span className="text-white text-sm font-mono">
+                            <span className="text-white text-sm ">
                               Ver Video
                             </span>
                           </div>
@@ -494,12 +494,12 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
               border: "1.5px solid rgba(255,255,255,0.12)",
             }}
           >
-            <h3 className="font-mono text-lg text-white/90 mb-4">
+            <h3 className=" text-lg text-white/90 mb-4">
               Share Your Victory
             </h3>
             <div className="space-y-3">
               <button
-                className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white font-mono text-sm rounded-lg border border-white/10 transition-all duration-300"
+                className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white  text-sm rounded-lg border border-white/10 transition-all duration-300"
                 onClick={() => {
                   window.open(
                     "https://twitter.com/intent/tweet?text=I%20just%20won%20the%20MoonXBT%20auction!",
@@ -510,7 +510,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
                 Share on X
               </button>
               <button
-                className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white font-mono text-sm rounded-lg border border-white/10 transition-all duration-300"
+                className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white  text-sm rounded-lg border border-white/10 transition-all duration-300"
                 onClick={() => {
                   window.open(
                     "https://warpcast.com/~/compose?text=I%20just%20won%20the%20MoonXBT%20auction!",

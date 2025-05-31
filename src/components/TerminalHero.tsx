@@ -200,6 +200,7 @@ const TerminalHero = () => {
   useEffect(() => {
     const checkIfLastWinner = async () => {
       if (wallet?.address && lastAuctionWinner) {
+        let last;
         setIsLastWinner(
           wallet.address.toLowerCase() === lastAuctionWinner.toLowerCase()
         );
@@ -331,7 +332,7 @@ const TerminalHero = () => {
         {/* Terminal Content */}
         <div
           ref={terminalRef}
-          className="flex-1 font-mono text-white pt-24 sm:pt-32 md:pt-32 lg:pt-32 xl:pt-36 px-3 sm:px-6 md:px-12 lg:px-16 xl:px-24 pb-16 overflow-y-auto relative"
+          className="flex-1 text-white pt-24 sm:pt-32 md:pt-32 lg:pt-32 xl:pt-36 px-3 sm:px-6 md:px-12 lg:px-16 xl:px-24 pb-16 overflow-y-auto relative"
           style={{
             backgroundImage:
               "linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)",
@@ -362,8 +363,8 @@ const TerminalHero = () => {
                 transition={{ duration: 0.2 }}
                 className={`${
                   line.username
-                    ? "mb-2 sm:mb-3 leading-relaxed"
-                    : "leading-none"
+                    ? "mb-2 sm:mb-3 leading-relaxed font-orbitron"
+                    : "leading-none font-mono"
                 }`}
               >
                 {line.username && (
@@ -419,7 +420,7 @@ const TerminalHero = () => {
             src="/assets/moon-landing2.png"
             alt="Moon Landing"
             fill
-            style={{ objectFit: 'cover' }}
+            style={{ objectFit: "cover" }}
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1752F0] via-transparent to-transparent" />
@@ -438,7 +439,7 @@ const TerminalHero = () => {
                 className="group flex items-center space-x-3 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all duration-300"
               >
                 <div className="w-2 h-2 bg-white/70 rounded-full group-hover:bg-white group-hover:animate-pulse transition-all duration-300" />
-                <span className="text-white/70 group-hover:text-white font-mono text-sm tracking-wider transition-all duration-300">
+                <span className="text-white/70 group-hover:text-white  text-sm tracking-wider transition-all duration-300">
                   PAUSE
                 </span>
               </button>
@@ -453,7 +454,7 @@ const TerminalHero = () => {
                 >
                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                   <div className="relative flex items-center space-x-3">
-                    <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
+                    <span className=" text-white font-bold tracking-wide whitespace-nowrap">
                       WINNER DASHBOARD
                     </span>
                     <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
@@ -466,7 +467,7 @@ const TerminalHero = () => {
               >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                 <div className="relative flex items-center space-x-3">
-                  <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
+                  <span className=" text-white font-bold tracking-wide whitespace-nowrap">
                     BID FOR TOMORROW'S VIDEO
                   </span>
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
@@ -478,7 +479,7 @@ const TerminalHero = () => {
               >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                 <div className="relative flex items-center space-x-3">
-                  <span className="font-mono text-white font-bold tracking-wide whitespace-nowrap">
+                  <span className=" text-white font-bold tracking-wide whitespace-nowrap">
                     AIRDROP
                   </span>
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
