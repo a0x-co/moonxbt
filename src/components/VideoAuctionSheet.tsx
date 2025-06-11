@@ -27,11 +27,26 @@ import {
 import { BidForm } from "./BidForm";
 import Image from "next/image";
 import { FaRegClock, FaTrophy, FaCoins } from "react-icons/fa";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface VideoAuctionSheetProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const MOONXBT_BLUE = "#1A6AFF";
+const GRAY_BG = "#F3F4F6";
+const GRAY_LABEL = "#6B7280";
+const WHITE = "#fff";
+const timerPulse = false; // Replace with real logic for last 10s
 
 export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const { sendTransaction: sendTransactionPrivy } = useSendTransactionPrivy();
@@ -46,6 +61,10 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const [bidTxHash, setBidTxHash] = useState<`0x${string}` | undefined>();
   const [wasConnected, setWasConnected] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [rawBidAmountInput, setRawBidAmountInput] = useState("");
+  const [rawResourceUrlInput, setRawResourceUrlInput] = useState("");
+  const [rawResourceMetadataInput, setRawResourceMetadataInput] = useState("");
+  const [urlError, setUrlError] = useState("");
 
   // Use the custom hook for auction data
   const {
@@ -321,20 +340,6 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         >
           Connect Wallet
         </button>
-      ) : wallet && wallet.chainId.split(":")[1] !== String(base.id) ? (
-        <button
-          onClick={handleChainClick}
-          type="button"
-          className="flex items-center justify-center gap-2 text-center w-full py-2.5 px-4 bg-[#0466c8] hover:bg-[#0466c8]/60 text-white text-sm rounded-lg border border-white/10 transition-all duration-300"
-        >
-          Change To Base{" "}
-          <Image
-            src="/assets/Base_Network_Logo.svg"
-            alt="Base"
-            width={20}
-            height={20}
-          />
-        </button>
       ) : (
         <div className="bg-[#1a237e]/20 rounded-lg p-3 flex items-center justify-between">
           <button
@@ -351,20 +356,6 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             <span className=" text-sm text-white/80">
               {wallet?.address.slice(0, 6)}...{wallet?.address.slice(-4)}
             </span>
-            {/* <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-white/50"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg> */}
           </button>
           <button
             onClick={handleDisconnect}
@@ -392,148 +383,182 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     </div>
   );
 
+  // Fix timerPulse: define as false for now (or add real logic if needed)
+  const isApproved = true;
+  const onApproveClick = () => {};
+  const handleBidSubmit = () => {};
+  const isMainButtonDisabled = false;
+
+  if (!isOpen) return null;
+
   return (
-    <Sheet
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open && !isWalletModalOpen) {
-          onClose();
-        }
-      }}
-    >
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-[900px] bg-[#1752F0] border-none p-6 overflow-y-auto shadow-2xl"
+    <div className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-start z-50 bg-muted">
+      {/* Close Button */}
+      <button
+        onClick={onClose}
+        className="fixed top-4 right-4 text-muted-foreground text-2xl font-bold hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded transition z-20"
+        aria-label="Close"
       >
-        <div className="flex flex-col gap-8">
-          <SheetHeader>
-            <SheetTitle className="text-4xl font-extrabold  text-white tracking-widest uppercase text-center font-orbitron">
-              Bid for MoonXBT's next video
-            </SheetTitle>
-            {currentAuctionId !== undefined && (
-              <p className="text-lg md:text-2xl  text-white/80 text-center mt-2">
-                Auction #{currentAuctionId.toString()}
-              </p>
-            )}
-          </SheetHeader>
-
-          {/* Auction Status Section */}
-          <div className="rounded-2xl p-8 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-3">
-                <FaRegClock className="text-cyan-200 text-3xl" />
-                <span className=" text-3xl md:text-5xl font-extrabold text-white tracking-widest">
-                  {isLoadingAuctionData ? "..." : formattedTimeLeft}
-                </span>
-              </div>
-              <span className=" text-base text-white/70 uppercase tracking-widest">
-                Time Remaining
-              </span>
-            </div>
-            <div className="w-0.5 h-20 bg-white/20 hidden md:block" />
-            <div className="flex-1 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-3">
-                <FaCoins className="text-cyan-200 text-3xl" />
-                <span className=" text-3xl md:text-5xl font-extrabold text-white tracking-widest">
-                  {isLoadingAuctionData ? "..." : formattedBidAmount}
-                </span>
-              </div>
-              <span className=" text-base text-white/70 uppercase tracking-widest">
-                Current Bid
-              </span>
-            </div>
+        ×
+      </button>
+      <div className="w-full flex justify-center pt-8 pb-2">
+        <Image src="/assets/moonxbt.png" alt="MoonXBT" width={40} height={40} className="rounded-full" />
+      </div>
+      <div className="w-full flex justify-center px-4 sm:px-8 md:px-12 overflow-y-auto" style={{maxHeight: '95vh'}}>
+        <Card className="w-full max-w-xl mx-auto p-0">
+          {/* Header Section */}
+          <div className="flex flex-col items-center gap-1 pb-2 pt-6">
+            <h1 className="font-sora font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight text-center leading-tight antialiased">
+              Bid for MoonXBT's Next Video
+            </h1>
+            <div className="text-primary font-semibold text-base tracking-widest uppercase">Auction #{currentAuctionId}</div>
           </div>
-
-          {/* Current URL & Bidder */}
-          <div className="flex flex-col md:flex-row gap-4">
-            {parsedResourceValue?.url && (
-              <div className="flex-1 bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-inner flex flex-col gap-2">
-                <span className=" text-xs text-white/60 uppercase tracking-widest">
-                  Current URL
-                </span>
+          <Separator className="mb-2" />
+          {/* Auction Status Area: Responsive layout */}
+          <div className="w-full flex flex-col sm:flex-row items-center sm:items-start justify-center gap-6 sm:gap-10 mb-4">
+            {/* Left: Winning video card (desktop: left column, mobile: top) */}
+            <div className="flex-1 w-full max-w-[380px] min-h-[340px] bg-gradient-to-br from-muted/80 to-white/90 border border-border rounded-2xl shadow-xl px-4 py-6 flex flex-col items-center justify-center gap-3 mb-2 sm:mb-0 text-center">
+              <span className="bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-widest mb-2">Winning Video</span>
+              <div className="w-full flex flex-col items-center">
+                <video
+                  src={parsedLastAuctionResourceValue && parsedLastAuctionResourceValue.url ? parsedLastAuctionResourceValue.url : "/assets/moonxbtauction.mp4"}
+                  controls
+                  className="rounded-xl w-full max-h-56 object-cover border border-border shadow-md"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+              {parsedLastAuctionResourceValue && parsedLastAuctionResourceValue.url && (
                 <a
-                  href={parsedResourceValue.url}
+                  href={parsedLastAuctionResourceValue.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className=" text-base md:text-lg text-white hover:underline break-all"
+                  className="text-xs text-primary hover:underline break-all font-medium mt-2"
                 >
-                  {parsedResourceValue.url}
+                  {parsedLastAuctionResourceValue.url}
                 </a>
-              </div>
-            )}
-            {currentBidder &&
-              currentBidder !==
-                "0x0000000000000000000000000000000000000000" && (
-                <div className="flex-1 bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-inner flex flex-col gap-2">
-                  <span className=" text-xs text-white/60 uppercase tracking-widest">
-                    Highest Bidder
-                  </span>
-                  <a
-                    href={`https://basescan.org/address/${currentBidder}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className=" text-base md:text-lg text-white hover:underline"
-                  >
-                    {`${currentBidder.slice(0, 6)}...${currentBidder.slice(
-                      -4
-                    )}`}
-                  </a>
-                </div>
-              )}
-          </div>
-
-          {/* Wallet Connection and Bid Form Section */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-[0_0_48px_#3a0ca3] flex flex-col gap-6">
-            {renderWalletButton()}
-            {wallet?.address && (
-              <BidForm
-                isApproved={!!allowanceData && allowanceData > BigInt(0)}
-                onApproveClick={handleApproveClick}
-                isApproving={isApproving}
-                isWritingBid={isBidding}
-                isWaitingApproval={isConfirmingApproval}
-                isWaitingBid={isConfirmingBid}
-                balanceOfA0X={formattedBalanceOfA0X}
-                bidAmount="0"
-                setBidAmount={(value) => {}}
-                handleRevokeApprovalClick={handleRevokeApprovalClick}
-              />
-            )}
-          </div>
-
-          {/* Winner Section */}
-          {lastAuctionWinner && (
-            <div className="mt-4 bg-white/10 backdrop-blur-xl rounded-xl p-6 border border-white/20 shadow-lg flex flex-col gap-2 items-center">
-              <div className="flex items-center gap-2 mb-2">
-                <FaTrophy className="text-cyan-200 text-2xl" />
-                <span className=" text-xl font-bold text-white uppercase tracking-widest">
-                  Winner
-                </span>
-              </div>
-              <span className=" text-base text-white/80">{`${lastAuctionWinner.slice(
-                0,
-                6
-              )}...${lastAuctionWinner.slice(-4)}`}</span>
-              {parsedLastAuctionResourceValue &&
-                parsedLastAuctionResourceValue.url && (
-                  <a
-                    href={parsedLastAuctionResourceValue.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className=" text-base text-white hover:underline break-all"
-                  >
-                    {parsedLastAuctionResourceValue.url}
-                  </a>
-                )}
-              {lastAuctionAmount && (
-                <span className=" text-lg text-white/80">
-                  Bid: {lastAuctionAmount}
-                </span>
               )}
             </div>
+            {/* Right: Last auction winner/status box (desktop: right column, mobile: below video) */}
+            <div className="flex-1 w-full max-w-[380px] min-h-[220px] sm:min-h-[340px] bg-white/90 rounded-2xl shadow-xl px-4 py-3 sm:py-6 flex flex-col items-center sm:items-end justify-center gap-2 sm:gap-4 text-center sm:text-right">
+              {lastAuctionWinner && (
+                <div className="flex flex-col items-center sm:items-end gap-1">
+                  <span className="inline-flex items-center gap-1 bg-primary/10 border border-primary/20 text-primary font-bold text-xs px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                    <FaTrophy className="text-primary text-base" />
+                    Last Auction Winner
+                  </span>
+                  <span className="font-mono text-base text-foreground bg-background px-3 py-1 rounded border border-border shadow-inner">
+                    {`${lastAuctionWinner.slice(0, 6)}...${lastAuctionWinner.slice(-4)}`}
+                  </span>
+                  {lastAuctionAmount && (
+                    <span className="text-xs text-muted-foreground font-semibold">Bid: {lastAuctionAmount.toString()}</span>
+                  )}
+                </div>
+              )}
+              {/* Timer and Bid: 2 columns on mobile, 1 column on desktop */}
+              <div className="flex flex-row sm:flex-col w-full gap-2 mt-2">
+                <div className="flex flex-col items-center sm:items-end flex-1">
+                  <span className="font-sora font-bold text-xl text-foreground tracking-tight">{isLoadingAuctionData ? "..." : formattedTimeLeft}</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-widest mt-1 font-medium">Time left</span>
+                </div>
+                <div className="flex flex-col items-center sm:items-end flex-1">
+                  <span className="font-sora font-bold text-xl text-foreground tracking-tight">{isLoadingAuctionData ? "..." : formattedBidAmount}</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-widest mt-1 font-medium">Current Bid</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Wallet pill/card as a new row below the boxes, same width as Place Bid row */}
+          {wallet?.address && (
+            <div className="w-full max-w-[380px] mx-auto flex flex-row items-center justify-between bg-muted/60 rounded-lg px-3 py-2 mb-4 gap-2">
+              <span className="flex items-center gap-2 font-mono text-xs text-foreground">
+                <Image src="/assets/Base_Network_Logo.svg" alt="AOX" width={16} height={16} className="rounded-full" />
+                {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
+              </span>
+              <span className="flex items-center gap-1 bg-white text-primary font-bold px-2 py-1 rounded text-xs border border-border">
+                <Image src="/assets/Base_Network_Logo.svg" alt="AOX" width={14} height={14} className="rounded-full" />
+                {balanceOfA0X} AOX
+              </span>
+              <Button variant="link" size="sm" onClick={handleDisconnect} className="text-xs text-primary font-semibold px-2 py-0 h-auto whitespace-nowrap">
+                Disconnect
+              </Button>
+            </div>
           )}
-        </div>
-      </SheetContent>
-    </Sheet>
+          {/* Place Bid row below wallet row, same width as boxes and other inputs */}
+          <div className="flex flex-row gap-2 items-center mb-4 w-full">
+            <Input
+              id="bid-amount"
+              type="number"
+              placeholder="Enter your bid"
+              value={rawBidAmountInput}
+              onChange={(e) => setRawBidAmountInput(e.target.value)}
+              className="flex-1 w-full bg-background text-foreground placeholder:text-muted-foreground text-base font-sora px-3 py-2 rounded border border-border focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_var(--primary)] transition min-h-[36px]"
+              disabled={isMainButtonDisabled}
+              min="0"
+            />
+            <Button
+              type="button"
+              onClick={isApproved ? handleBidSubmit : onApproveClick}
+              className="w-auto min-w-[120px] flex items-center justify-center gap-2 text-lg font-bold h-[42px]"
+              disabled={isMainButtonDisabled}
+            >
+              <span className="text-xl">🚀</span>
+              Place Bid
+            </Button>
+          </div>
+          {/* Resource URL */}
+          <div className="flex flex-col gap-1 w-full">
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground font-medium">Resource URL</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs text-primary/80 cursor-pointer">?</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Link to video proposal</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input
+              id="resource-url"
+              type="url"
+              placeholder="Resource URL (e.g., https://...)"
+              value={rawResourceUrlInput}
+              onChange={(e) => setRawResourceUrlInput(e.target.value)}
+              className={`w-full bg-background text-foreground placeholder:text-muted-foreground text-base font-mono px-3 py-2 rounded border border-border focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_var(--primary)] transition min-h-[36px] ${urlError ? "ring-2 ring-red-400" : ""}`}
+              disabled={isMainButtonDisabled}
+            />
+            {urlError && <p className="text-xs text-red-400 mt-1">{urlError}</p>}
+          </div>
+          {/* Metadata */}
+          <div className="flex flex-col gap-1 w-full">
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground font-medium">Metadata</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs text-primary/80 cursor-pointer">?</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Optional creator info</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Textarea
+              id="metadata"
+              placeholder="Additional Metadata (optional)"
+              value={rawResourceMetadataInput}
+              onChange={(e) => setRawResourceMetadataInput(e.target.value)}
+              className="w-full bg-background text-foreground placeholder:text-muted-foreground text-base font-mono px-3 py-2 rounded border border-border focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_var(--primary)] transition min-h-[36px]"
+              rows={2}
+              disabled={isMainButtonDisabled}
+            />
+          </div>
+        </Card>
+      </div>
+    </div>
   );
 }

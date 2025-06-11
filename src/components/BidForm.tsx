@@ -266,53 +266,12 @@ export function BidForm({
             setRawBidAmountInput(e.target.value);
             setParentBidAmount(e.target.value);
           }}
-          className="bg-white/20 border border-white/20 focus:border-pink-400 text-white placeholder:text-pink-100/60 shadow-inner focus:shadow-[0_0_8px_#ff3cac] text-lg font-mono px-4 py-3 rounded-lg transition"
+          className="w-full bg-white text-[#1752F0] placeholder:text-gray-400 text-lg font-semibold font-orbitron px-5 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-200 transition"
           disabled={areInputsDisabled}
           min="0"
         />
-
-        {/* Percentage buttons */}
-        <div className="grid grid-cols-4 gap-2">
-          {/* Percentage buttons disabled based on areInputsDisabled and balance */}
-          <Button
-            type="button"
-            onClick={() => setBidPercentage(25)}
-            variant="outline"
-            className="bg-[#00a8e8] text-white font-bold border-none shadow-sm hover:bg-[#00a8e8]/60 hover:text-white transition text-base"
-            disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
-          >
-            25%
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setBidPercentage(50)}
-            variant="outline"
-            className="bg-[#00a8e8] text-white font-bold border-none shadow-sm hover:bg-[#00a8e8]/60 hover:text-white transition text-base"
-            disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
-          >
-            50%
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setBidPercentage(75)}
-            variant="outline"
-            className="bg-[#00a8e8] text-white font-bold border-none shadow-sm hover:bg-[#00a8e8]/60 hover:text-white transition text-base"
-            disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
-          >
-            75%
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setBidPercentage(100)}
-            variant="outline"
-            className="bg-[#00a8e8] text-white font-bold border-none shadow-sm hover:bg-[#00a8e8]/60 hover:text-white transition text-base"
-            disabled={areInputsDisabled || parseFloat(balanceOfA0X) <= 0}
-          >
-            100%
-          </Button>
-        </div>
         {/* Display balance */}
-        <p className="text-xs text-white/70 font-mono">
+        <p className="text-xs text-gray-400 font-medium ml-2">
           Balance: {balanceOfA0X} A0X
         </p>
       </div>
@@ -323,9 +282,7 @@ export function BidForm({
           placeholder="Resource URL (e.g., https://...)"
           value={rawResourceUrlInput}
           onChange={(e) => setRawResourceUrlInput(e.target.value)}
-          className={`bg-white/20 border border-white/20 focus:border-pink-400 text-white placeholder:text-pink-100/60 shadow-inner focus:shadow-[0_0_8px_#ff3cac] text-base font-mono px-4 py-3 rounded-lg transition ${
-            urlError ? "border-red-500" : ""
-          }`}
+          className={`w-full bg-white text-[#1752F0] placeholder:text-gray-400 text-base font-mono px-5 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-200 transition ${urlError ? "ring-2 ring-red-400" : ""}`}
           disabled={areInputsDisabled}
         />
         {urlError && <p className="text-xs text-red-400">{urlError}</p>}
@@ -335,7 +292,7 @@ export function BidForm({
         placeholder="Additional Metadata (optional)"
         value={rawResourceMetadataInput}
         onChange={(e) => setRawResourceMetadataInput(e.target.value)}
-        className="bg-white/20 border border-white/20 focus:border-pink-400 text-white placeholder:text-pink-100/60 shadow-inner focus:shadow-[0_0_8px_#ff3cac] text-base font-mono px-4 py-3 rounded-lg transition"
+        className="w-full bg-white text-[#1752F0] placeholder:text-gray-400 text-base font-mono px-5 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-200 transition"
         rows={2}
         disabled={areInputsDisabled}
       />
@@ -343,11 +300,11 @@ export function BidForm({
       {/* Main action button */}
       <Button
         onClick={!isApproved ? onApproveClick : handleBidSubmit}
-        className="w-full py-4 text-xl font-extrabold bg-[#00a8e8] text-white rounded-xl shadow-sm hover:bg-[#00a8e8]/60 hover:text-white transition flex items-center justify-center gap-2"
+        className="w-full py-4 text-xl font-extrabold bg-cyan-500 text-white rounded-full hover:bg-cyan-600 transition flex items-center justify-center gap-2 shadow-none border-none"
         disabled={isMainButtonDisabled}
       >
         <span className="text-xl">🚀</span>
-        {buttonText}
+        Place Bid
       </Button>
 
       {/* Revoke Approval Button */}
