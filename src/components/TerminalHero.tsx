@@ -89,31 +89,6 @@ const TerminalHero = () => {
   const { wallets } = useWallets();
   const wallet = wallets[0];
 
-  const bannerLines2 = [
-    "  /******   /******  /**   /**",
-    " /**__  ** /***_  **| **  / **",
-    "| **  \\ **| ****\\ **|  **/ **/",
-    "| ********| ** ** ** \\  ****/ ",
-    "| **__  **| **\\ ****  >**  ** ",
-    "| **  | **| ** \\ *** /**/\\  **",
-    "| **  | **|  ******/| **  \\ **",
-    "|__/  |__/ \\______/ |__/  |__/",
-  ];
-
-  const bannerLines3 = [
-    "                                        /$$                     /$$   /$$ /$$$$$$$  /$$$$$$$$",
-    "                                       |__/                    | $$  / $$| $$__  $$|__  $$__/",
-    "       /$$  /$$$$$$   /$$$$$$$ /$$$$$$$ /$$  /$$$$$$$  /$$$$$$ |  $$/ $$/| $$    $$   | $$",
-    "      |__/ /$$__  $$ /$$_____//$$_____/| $$ /$$_____/ |____  $$    $$$$/ | $$$$$$$    | $$",
-    "       /$$| $$$$$$$$|  $$$$$$|  $$$$$$ | $$| $$        /$$$$$$$  >$$  $$ | $$__  $$   | $$",
-    "      | $$| $$_____/   _____ $$ ____ $$| $$| $$       /$$__  $$ /$$/   $$| $$    $$   | $$",
-    "      | $$|  $$$$$$$ /$$$$$$$//$$$$$$$/| $$|  $$$$$$$|  $$$$$$$| $$    $$| $$$$$$$/   | $$",
-    "      | $$|  _______/|_______/|_______/|__/  _______/  _______/|__/  |__/|_______/    |__/",
-    " /$$  | $$|",
-    "|   $$$$$$/",
-    "   ______/",
-  ];
-
   const bannerLines = [
     "                                             /$$   /$$ /$$$$$$$  /$$$$$$$$",
     "                                            | $$  / $$| $$__  $$|__  $$__/",
@@ -381,7 +356,7 @@ const TerminalHero = () => {
                   text={line.message}
                   className={`${
                     !line.username
-                      ? "font-bold text-white tracking-wider text-[8px] xs:text-[10px] sm:text-xs md:text-sm whitespace-pre cursor-pointer"
+                      ? "font-bold text-white tracking-wider text-[6px] xs:text-[8px] sm:text-[10px] md:text-xs whitespace-pre cursor-pointer"
                       : "text-white/90 pl-0 sm:pl-4 text-xs sm:text-sm md:text-base break-words"
                   } flex items-center ${
                     line.message.includes("Current Bid:")
@@ -410,6 +385,7 @@ const TerminalHero = () => {
                 transition={{ duration: 0.8, repeat: Infinity }}
               />
             )}
+         
           </div>
         </div>
 
@@ -617,52 +593,52 @@ const TerminalHero = () => {
         onClose={() => setIsAirdropOpen(false)}
       />
 
-      <style jsx global>{`
-        @keyframes scan {
-          from {
-            transform: translateY(0);
-          }
-          to {
-            transform: translateY(4px);
-          }
-        }
-        @media (max-width: 640px) {
-          .whitespace-pre {
-            white-space: pre;
-            font-size: 8px;
-            letter-spacing: 0;
-          }
-        }
-        @media (min-width: 641px) and (max-width: 768px) {
-          .whitespace-pre {
-            white-space: pre;
-            font-size: 10px;
-            letter-spacing: 0.02em;
-          }
-        }
+<style jsx global>{`
+  @keyframes scan {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(4px);
+    }
+  }
+  @media (max-width: 640px) {
+    .whitespace-pre {
+      white-space: pre;
+      font-size: 6px; /* Reduced font size for mobile */
+      letter-spacing: 0;
+    }
+  }
+  @media (min-width: 641px) and (max-width: 768px) {
+    .whitespace-pre {
+      white-space: pre;
+      font-size: 8px; /* Slightly larger for small tablets */
+      letter-spacing: 0.02em;
+    }
+  }
 
-        /* Custom Scrollbar Styles */
-        ::-webkit-scrollbar {
-          width: 10px;
-          background: rgba(23, 82, 240, 0.1);
-        }
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+    background: rgba(23, 82, 240, 0.1);
+  }
 
-        ::-webkit-scrollbar-thumb {
-          background: #1752f0;
-          border-radius: 4px;
-          border: 2px solid #00008b;
-        }
+  ::-webkit-scrollbar-thumb {
+    background: #1752f0;
+    border-radius: 4px;
+    border: 2px solid #00008b;
+  }
 
-        ::-webkit-scrollbar-thumb:hover {
-          background: #1142c0;
-        }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1142c0;
+  }
 
-        /* Firefox */
-        * {
-          scrollbar-width: thin;
-          scrollbar-color: #1752f0 rgba(23, 82, 240, 0.1);
-        }
-      `}</style>
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1752f0 rgba(23, 82, 240, 0.1);
+  }
+`}</style>
     </div>
   );
 };
