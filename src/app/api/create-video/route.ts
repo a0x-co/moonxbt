@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const { name, description, websiteUrl, websiteDocUrl } =
       await request.json();
 
-    // Validación de campos requeridos
+    // Required fields validation
     if (!name || !description || !websiteUrl) {
       return NextResponse.json(
         { error: "Name, description and website URL are required" },
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Preparar los datos para la API
+    // Prepare data for API
     const projectData = {
       projectData: {
         name,
@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
       screenshotService: "screenshotmachine",
     };
 
-    // Llamar al endpoint del backend
+    // Call backend endpoint
     const response = await axios.post(
-      `${A0X_AGENT_API_URL}/a0x-framework/create-influencer-video`,
+      `${A0X_AGENT_API_URL}/moonxbt/create-influencer-video`,
       projectData,
       {
         headers: {
@@ -46,9 +46,10 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    // Return task ID
     return NextResponse.json({
       message: "Video creation initiated",
-      data: response.data,
+      taskId: response.data.taskId,
     });
   } catch (error) {
     console.error("Error creating promotional video:", error);

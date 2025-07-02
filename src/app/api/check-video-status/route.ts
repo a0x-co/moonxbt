@@ -7,17 +7,18 @@ const A0X_AGENT_API_URL = process.env.A0X_AGENT_API_URL;
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const influencerId = searchParams.get("influencerId");
+    const taskId = searchParams.get("taskId");
 
-    if (!influencerId) {
+    if (!taskId) {
       return NextResponse.json(
-        { error: "Influencer ID is required" },
+        { error: "Task ID is required" },
         { status: 400 }
       );
     }
 
+    // Check task status from backend
     const response = await axios.get(
-      `${A0X_AGENT_API_URL}/moonxbt/${influencerId}/videos`,
+      `${A0X_AGENT_API_URL}/moonxbt/task/${taskId}/status`,
       {
         headers: {
           "x-api-key": API_KEY!,
@@ -28,9 +29,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response.data);
   } catch (error) {
-    console.error("Error fetching videos:", error);
+    console.error("Error checking video status:", error);
     return NextResponse.json(
-      { error: "Failed to fetch videos" },
+      { error: "Failed to check video status" },
       { status: 500 }
     );
   }

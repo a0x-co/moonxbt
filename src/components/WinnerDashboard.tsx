@@ -52,22 +52,26 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
   );
   const [websiteDocUrl, setWebsiteDocUrl] = useState("");
 
-  // Nuevos estados para manejar mensajes y carga
+  // States for messages and loading
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error" | null;
     text: string;
   }>({ type: null, text: "" });
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
-  // Estados para la lista de videos
+  // States for video list
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
   const [videosError, setVideosError] = useState<string | null>(null);
 
-  // Estado para el modal de video
+  // State for video modal
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
 
-  // Función para generar thumbnail del video
+  // Function to generate thumbnail of video
   const generateThumbnail = async (videoUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement("video");
@@ -98,7 +102,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
     });
   };
 
-  // Función para obtener los videos
+  // Function to get videos
   const fetchVideos = async () => {
     setIsLoadingVideos(true);
     setVideosError(null);
@@ -116,7 +120,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
         throw new Error("Error en la respuesta del servidor");
       }
 
-      // Generar thumbnails para cada video
+      // Generate thumbnails for each video
       const videosWithThumbnails = await Promise.all(
         data.videos.map(async (video) => {
           try {
@@ -139,14 +143,14 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
     }
   };
 
-  // Cargar videos cuando se abre el tab
+  // Load videos when tab opens
   useEffect(() => {
     if (isOpen) {
       fetchVideos();
     }
   }, [isOpen]);
 
-  // Función para validar la URL
+  // Function to validate URL
   const isValidUrl = (url: string) => {
     try {
       new URL(url);
@@ -156,15 +160,92 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
     }
   };
 
+  const checkVideoStatus = async (taskId: string) => {
+    try {
+      const response = await fetch(`/api/check-video-status?taskId=${taskId}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error checking video status");
+      }
+
+      if (data.status === "completed") {
+        // Clear polling interval
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
+
+        setMessage({
+          type: "success",
+          text: "Video created successfully! You will be redirected to the video list.",
+        });
+
+        // Clear form
+        setProjectName("");
+        setProjectDescription("");
+        setProjectUrl(lastAuctionResourceValue || "");
+        setWebsiteDocUrl("");
+        setTaskId(null);
+
+        // Switch to videos tab after 2 seconds
+        setTimeout(() => {
+          const videosTab = document.querySelector(
+            '[data-value="videos"]'
+          ) as HTMLElement;
+          if (videosTab) videosTab.click();
+          fetchVideos(); // Update video list
+        }, 2000);
+      } else if (data.status === "failed") {
+        // Clear polling interval
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
+
+        setMessage({
+          type: "error",
+          text: "Error creating video. Please try again.",
+        });
+        setTaskId(null);
+      }
+      // If status is "processing", continue polling
+    } catch (error) {
+      // Clear polling interval on error
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        setPollingInterval(null);
+      }
+
+      setMessage({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Error checking video status",
+      });
+      setTaskId(null);
+    }
+  };
+
+  // Clear interval when component unmounts
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
+
   const handleGenerateVideo = async () => {
-    // Resetear mensajes
+    // Reset messages
     setMessage({ type: null, text: "" });
 
-    // Validaciones
+    // Validations
     if (!projectName.trim()) {
       setMessage({
         type: "error",
-        text: "El nombre del proyecto es requerido",
+        text: "Project name is required",
       });
       return;
     }
@@ -172,25 +253,25 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
     if (!projectDescription.trim()) {
       setMessage({
         type: "error",
-        text: "La descripción del proyecto es requerida",
+        text: "Project description is required",
       });
       return;
     }
 
     if (!projectUrl.trim()) {
-      setMessage({ type: "error", text: "La URL del proyecto es requerida" });
+      setMessage({ type: "error", text: "Project URL is required" });
       return;
     }
 
     if (!isValidUrl(projectUrl)) {
-      setMessage({ type: "error", text: "La URL del proyecto no es válida" });
+      setMessage({ type: "error", text: "Invalid project URL" });
       return;
     }
 
     if (websiteDocUrl && !isValidUrl(websiteDocUrl)) {
       setMessage({
         type: "error",
-        text: "La URL de documentación no es válida",
+        text: "Invalid documentation URL",
       });
       return;
     }
@@ -215,32 +296,27 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Error al crear el video");
+        throw new Error(data.error || "Error creating video");
       }
 
+      // Save task ID and start polling
+      setTaskId(data.taskId);
       setMessage({
         type: "success",
-        text: "¡Video creado exitosamente! Serás redirigido a la lista de videos.",
+        text: "Video creation in progress. This may take a few minutes...",
       });
 
-      // Limpiar el formulario
-      setProjectName("");
-      setProjectDescription("");
-      setProjectUrl(lastAuctionResourceValue || "");
-      setWebsiteDocUrl("");
-
-      // Cambiar al tab de videos después de 2 segundos
-      setTimeout(() => {
-        const videosTab = document.querySelector(
-          '[data-value="videos"]'
-        ) as HTMLElement;
-        if (videosTab) videosTab.click();
-      }, 2000);
+      // Start polling every 5 seconds
+      const interval = setInterval(() => {
+        if (data.taskId) {
+          checkVideoStatus(data.taskId);
+        }
+      }, 5000);
+      setPollingInterval(interval);
     } catch (error) {
       setMessage({
         type: "error",
-        text:
-          error instanceof Error ? error.message : "Error al crear el video",
+        text: error instanceof Error ? error.message : "Error creating video",
       });
     } finally {
       setIsLoading(false);
@@ -494,9 +570,7 @@ export const WinnerDashboard = ({ isOpen, onClose }: WinnerDashboardProps) => {
               border: "1.5px solid rgba(255,255,255,0.12)",
             }}
           >
-            <h3 className=" text-lg text-white/90 mb-4">
-              Share Your Victory
-            </h3>
+            <h3 className=" text-lg text-white/90 mb-4">Share Your Victory</h3>
             <div className="space-y-3">
               <button
                 className="w-full py-2.5 px-4 bg-[#1a237e]/40 hover:bg-[#1a237e]/60 text-white  text-sm rounded-lg border border-white/10 transition-all duration-300"

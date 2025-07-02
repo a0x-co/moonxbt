@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     } = Object.fromEntries(searchParams.entries());
 
     const response = await axios.get(
-      `${A0X_AGENT_API_URL}/a0x-framework/airdrop/admin-dashboard`,
+      `${A0X_AGENT_API_URL}/moonxbt/airdrop/admin-dashboard`,
       {
         params: {
           fid,
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await axios.post(
-      `${A0X_AGENT_API_URL}/a0x-framework/airdrop/admin-dashboard`,
+      `${A0X_AGENT_API_URL}/moonxbt/airdrop/admin-dashboard`,
       {
         action: "update_task",
         farcasterFid,

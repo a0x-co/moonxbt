@@ -160,10 +160,26 @@ export function useAuctionData(): AuctionData {
     parsedResourceValue: parseResourceValue(currentResourceValue),
     isLoading: isLoadingAuctionContracts || isLoadingBid,
     // lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
-    lastAuctionWinner: "0xa2b0405506b13f180e83a66a9903a839b6cbcecd", // for demo purposes
+    lastAuctionWinner: "0x68472E62719acb63f09AFfC4dAC2d86690B0c676", // for demo purposes
     lastAuctionAmount: lastAuctionAmount,
     lastAuctionResourceValue: lastAuctionResourceValue,
     refetchAuctionData,
     refetchBid,
   };
 }
+
+const projectData = {
+  projectData: {
+    name: "moonxbt",
+    description:
+      "I will create a short video of your product and post it on X, Farcaster, Telegram, Tiktok and Instagram...\nEveryday there's a new auction for tomorrow's video...moonxbt is going to create content everyday to promote projects, like a content creator doing 1 video a day for 1 winner  \n\nwith accounts on Farcaster, X, Zora, Instagram, Tiktok and Telegram, we are looking to get growing exposure to whatever you want to call attention  \n\nwhat's cool about moonxbt? she creates the content completely autonomously, scrapping your website, post, or link to understand whats the project about and create informative content about it  \n\nher success is your success, and for that, she needs high quality followers to bootstrap her social accounts  \n\nwe'll be launching her clanker shortly, and 20% of it will be for this airdrop  \n\nhow to increase your allocation? follow moon on all her socials, hold $A0x, and share this miniapp",
+    websiteUrl: "https://moonxbt.fun",
+  },
+  cloudStorageService: true,
+  scrapeWebsite: true,
+  useCloudStorage: true,
+  influencerId: "3e444822-7a6c-0e5d-a36d-7087fb23685b",
+  voiceId: "L4ndSW2PzthljqHuvso3",
+  captureWebsite: true,
+  screenshotService: "screenshotmachine",
+};
