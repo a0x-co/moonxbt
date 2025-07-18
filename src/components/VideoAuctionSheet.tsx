@@ -10,6 +10,7 @@ import {
 } from "@/constants/contracts";
 import { useApprove } from "@/hooks/useApprove";
 import { useAuctionData } from "@/hooks/useAuctionData";
+import { useAsset } from "@/hooks/useAssets";
 import {
   useLogout,
   usePrivy,
@@ -27,7 +28,12 @@ import {
 import { BidForm } from "./BidForm";
 import Image from "next/image";
 import { FaRegClock, FaTrophy, FaCoins } from "react-icons/fa";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,6 +97,24 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       parsedLastAuctionResourceValue = null;
     }
   }
+
+  // Hook para el video de subasta
+  const {
+    signedUrl: auctionVideoSignedUrl,
+    isLoading: auctionVideoLoading,
+    error: auctionVideoError,
+  } = useAsset(
+    "a0x-mirror-storage",
+    "assets/moonxbtauction.mp4",
+    3600 // 1 hora
+  );
+
+  // Hook para el logo de Base Network
+  const { signedUrl: baseLogoSignedUrl } = useAsset(
+    "a0x-mirror-storage",
+    "assets/Base_Network_Logo.svg",
+    3600 // 1 hora
+  );
 
   // Check A0x allowance
   const {
@@ -402,42 +426,61 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         ×
       </button>
       <div className="w-full flex justify-center pt-8 pb-2">
-        <Image src="/assets/moonxbt.png" alt="MoonXBT" width={40} height={40} className="rounded-full" />
+        <Image
+          src="/assets/moonxbt.png"
+          alt="MoonXBT"
+          width={40}
+          height={40}
+          className="rounded-full"
+        />
       </div>
-      <div className="w-full flex justify-center px-4 sm:px-8 md:px-12 overflow-y-auto" style={{maxHeight: '95vh'}}>
+      <div
+        className="w-full flex justify-center px-4 sm:px-8 md:px-12 overflow-y-auto"
+        style={{ maxHeight: "95vh" }}
+      >
         <Card className="w-full max-w-xl mx-auto p-0">
           {/* Header Section */}
           <div className="flex flex-col items-center gap-1 pb-2 pt-6">
             <h1 className="font-sora font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight text-center leading-tight antialiased">
               Bid for MoonXBT's Next Video
             </h1>
-            <div className="text-primary font-semibold text-base tracking-widest uppercase">Auction #{currentAuctionId}</div>
+            <div className="text-primary font-semibold text-base tracking-widest uppercase">
+              Auction #{currentAuctionId}
+            </div>
           </div>
           <Separator className="mb-2" />
           {/* Auction Status Area: Responsive layout */}
           <div className="w-full flex flex-col sm:flex-row items-center sm:items-start justify-center gap-6 sm:gap-10 mb-4">
             {/* Left: Winning video card (desktop: left column, mobile: top) */}
             <div className="flex-1 w-full max-w-[380px] min-h-[340px] bg-gradient-to-br from-muted/80 to-white/90 border border-border rounded-2xl shadow-xl px-4 py-6 flex flex-col items-center justify-center gap-3 mb-2 sm:mb-0 text-center">
-              <span className="bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-widest mb-2">Winning Video</span>
+              <span className="bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-widest mb-2">
+                Winning Video
+              </span>
               <div className="w-full flex flex-col items-center">
                 <video
-                  src={parsedLastAuctionResourceValue && parsedLastAuctionResourceValue.url ? parsedLastAuctionResourceValue.url : "/assets/moonxbtauction.mp4"}
+                  src={
+                    parsedLastAuctionResourceValue &&
+                    parsedLastAuctionResourceValue.url
+                      ? parsedLastAuctionResourceValue.url
+                      : auctionVideoSignedUrl || "/assets/moonxbtauction.mp4"
+                  }
                   controls
                   className="rounded-xl w-full max-h-56 object-cover border border-border shadow-md"
                 >
                   Your browser does not support the video tag.
                 </video>
               </div>
-              {parsedLastAuctionResourceValue && parsedLastAuctionResourceValue.url && (
-                <a
-                  href={parsedLastAuctionResourceValue.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline break-all font-medium mt-2"
-                >
-                  {parsedLastAuctionResourceValue.url}
-                </a>
-              )}
+              {parsedLastAuctionResourceValue &&
+                parsedLastAuctionResourceValue.url && (
+                  <a
+                    href={parsedLastAuctionResourceValue.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline break-all font-medium mt-2"
+                  >
+                    {parsedLastAuctionResourceValue.url}
+                  </a>
+                )}
             </div>
             {/* Right: Last auction winner/status box (desktop: right column, mobile: below video) */}
             <div className="flex-1 w-full max-w-[380px] min-h-[220px] sm:min-h-[340px] bg-white/90 rounded-2xl shadow-xl px-4 py-3 sm:py-6 flex flex-col items-center sm:items-end justify-center gap-2 sm:gap-4 text-center sm:text-right">
@@ -448,22 +491,35 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                     Last Auction Winner
                   </span>
                   <span className="font-mono text-base text-foreground bg-background px-3 py-1 rounded border border-border shadow-inner">
-                    {`${lastAuctionWinner.slice(0, 6)}...${lastAuctionWinner.slice(-4)}`}
+                    {`${lastAuctionWinner.slice(
+                      0,
+                      6
+                    )}...${lastAuctionWinner.slice(-4)}`}
                   </span>
                   {lastAuctionAmount && (
-                    <span className="text-xs text-muted-foreground font-semibold">Bid: {lastAuctionAmount.toString()}</span>
+                    <span className="text-xs text-muted-foreground font-semibold">
+                      Bid: {lastAuctionAmount.toString()}
+                    </span>
                   )}
                 </div>
               )}
               {/* Timer and Bid: 2 columns on mobile, 1 column on desktop */}
               <div className="flex flex-row sm:flex-col w-full gap-2 mt-2">
                 <div className="flex flex-col items-center sm:items-end flex-1">
-                  <span className="font-sora font-bold text-xl text-foreground tracking-tight">{isLoadingAuctionData ? "..." : formattedTimeLeft}</span>
-                  <span className="text-xs text-muted-foreground uppercase tracking-widest mt-1 font-medium">Time left</span>
+                  <span className="font-sora font-bold text-xl text-foreground tracking-tight">
+                    {isLoadingAuctionData ? "..." : formattedTimeLeft}
+                  </span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-widest mt-1 font-medium">
+                    Time left
+                  </span>
                 </div>
                 <div className="flex flex-col items-center sm:items-end flex-1">
-                  <span className="font-sora font-bold text-xl text-foreground tracking-tight">{isLoadingAuctionData ? "..." : formattedBidAmount}</span>
-                  <span className="text-xs text-muted-foreground uppercase tracking-widest mt-1 font-medium">Current Bid</span>
+                  <span className="font-sora font-bold text-xl text-foreground tracking-tight">
+                    {isLoadingAuctionData ? "..." : formattedBidAmount}
+                  </span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-widest mt-1 font-medium">
+                    Current Bid
+                  </span>
                 </div>
               </div>
             </div>
@@ -472,14 +528,31 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
           {wallet?.address && (
             <div className="w-full max-w-[380px] mx-auto flex flex-row items-center justify-between bg-muted/60 rounded-lg px-3 py-2 mb-4 gap-2">
               <span className="flex items-center gap-2 font-mono text-xs text-foreground">
-                <Image src="/assets/Base_Network_Logo.svg" alt="AOX" width={16} height={16} className="rounded-full" />
+                <Image
+                  src={baseLogoSignedUrl || "/assets/Base_Network_Logo.svg"}
+                  alt="AOX"
+                  width={16}
+                  height={16}
+                  className="rounded-full"
+                />
                 {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
               </span>
               <span className="flex items-center gap-1 bg-white text-primary font-bold px-2 py-1 rounded text-xs border border-border">
-                <Image src="/assets/Base_Network_Logo.svg" alt="AOX" width={14} height={14} className="rounded-full" />
+                <Image
+                  src={baseLogoSignedUrl || "/assets/Base_Network_Logo.svg"}
+                  alt="AOX"
+                  width={14}
+                  height={14}
+                  className="rounded-full"
+                />
                 {balanceOfA0X} AOX
               </span>
-              <Button variant="link" size="sm" onClick={handleDisconnect} className="text-xs text-primary font-semibold px-2 py-0 h-auto whitespace-nowrap">
+              <Button
+                variant="link"
+                size="sm"
+                onClick={handleDisconnect}
+                className="text-xs text-primary font-semibold px-2 py-0 h-auto whitespace-nowrap"
+              >
                 Disconnect
               </Button>
             </div>
@@ -509,11 +582,15 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
           {/* Resource URL */}
           <div className="flex flex-col gap-1 w-full">
             <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground font-medium">Resource URL</span>
+              <span className="text-xs text-muted-foreground font-medium">
+                Resource URL
+              </span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs text-primary/80 cursor-pointer">?</span>
+                    <span className="text-xs text-primary/80 cursor-pointer">
+                      ?
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Link to video proposal</p>
@@ -527,19 +604,27 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               placeholder="Resource URL (e.g., https://...)"
               value={rawResourceUrlInput}
               onChange={(e) => setRawResourceUrlInput(e.target.value)}
-              className={`w-full bg-background text-foreground placeholder:text-muted-foreground text-base font-mono px-3 py-2 rounded border border-border focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_var(--primary)] transition min-h-[36px] ${urlError ? "ring-2 ring-red-400" : ""}`}
+              className={`w-full bg-background text-foreground placeholder:text-muted-foreground text-base font-mono px-3 py-2 rounded border border-border focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_var(--primary)] transition min-h-[36px] ${
+                urlError ? "ring-2 ring-red-400" : ""
+              }`}
               disabled={isMainButtonDisabled}
             />
-            {urlError && <p className="text-xs text-red-400 mt-1">{urlError}</p>}
+            {urlError && (
+              <p className="text-xs text-red-400 mt-1">{urlError}</p>
+            )}
           </div>
           {/* Metadata */}
           <div className="flex flex-col gap-1 w-full">
             <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground font-medium">Metadata</span>
+              <span className="text-xs text-muted-foreground font-medium">
+                Metadata
+              </span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs text-primary/80 cursor-pointer">?</span>
+                    <span className="text-xs text-primary/80 cursor-pointer">
+                      ?
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Optional creator info</p>

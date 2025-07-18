@@ -3,6 +3,7 @@
 import { VideoAuctionSheet } from "@/components/VideoAuctionSheet";
 import { useChatSheet } from "@/context/ChatSheetContext";
 import { useAuctionData } from "@/hooks/useAuctionData";
+import { useAsset } from "@/hooks/useAssets";
 import { useWallets } from "@privy-io/react-auth";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -88,6 +89,42 @@ const TerminalHero = () => {
   const { lastAuctionWinner } = useAuctionData();
   const { wallets } = useWallets();
   const wallet = wallets[0];
+
+  // Hook para el video de GCS
+  const {
+    signedUrl: videoSignedUrl,
+    isLoading: videoLoading,
+    error: videoError,
+  } = useAsset(
+    "a0x-mirror-storage",
+    "agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747863974236.mp4",
+    7200 // 2 horas
+  );
+
+  // Hooks para los iconos de redes sociales
+  const { signedUrl: xIconSignedUrl } = useAsset(
+    "a0x-mirror-storage",
+    "assets/x.png",
+    3600 // 1 hora
+  );
+
+  const { signedUrl: farcasterIconSignedUrl } = useAsset(
+    "a0x-mirror-storage",
+    "assets/farcaster.png",
+    3600 // 1 hora
+  );
+
+  const { signedUrl: zoraIconSignedUrl } = useAsset(
+    "a0x-mirror-storage",
+    "assets/zora.png",
+    3600 // 1 hora
+  );
+
+  const { signedUrl: dexlogoIconSignedUrl } = useAsset(
+    "a0x-mirror-storage",
+    "assets/dexlogo.png",
+    3600 // 1 hora
+  );
 
   const bannerLines = [
     "                                             /$$   /$$ /$$$$$$$  /$$$$$$$$",
@@ -299,7 +336,10 @@ const TerminalHero = () => {
           >
             <MobileVideoDisplay
               show={showMobileVideo}
-              videoUrl="https://storage.googleapis.com/a0x-mirror-storage/agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747863974236.mp4"
+              videoUrl={
+                videoSignedUrl ||
+                "https://storage.googleapis.com/a0x-mirror-storage/agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747863974236.mp4"
+              }
             />
           </motion.div>
         </motion.div>
@@ -385,7 +425,6 @@ const TerminalHero = () => {
                 transition={{ duration: 0.8, repeat: Infinity }}
               />
             )}
-         
           </div>
         </div>
 
@@ -473,7 +512,7 @@ const TerminalHero = () => {
               >
                 <div className="relative">
                   <Image
-                    src="/assets/x.png"
+                    src={xIconSignedUrl || "/assets/x.png"}
                     alt="X"
                     width={20}
                     height={20}
@@ -490,7 +529,7 @@ const TerminalHero = () => {
               >
                 <div className="relative">
                   <Image
-                    src="/assets/farcaster.png"
+                    src={farcasterIconSignedUrl || "/assets/farcaster.png"}
                     alt="Farcaster"
                     width={20}
                     height={20}
@@ -540,7 +579,7 @@ const TerminalHero = () => {
               >
                 <div className="relative">
                   <Image
-                    src="/assets/zora.png"
+                    src={zoraIconSignedUrl || "/assets/zora.png"}
                     alt="Zora"
                     width={20}
                     height={20}
@@ -557,7 +596,7 @@ const TerminalHero = () => {
               >
                 <div className="relative">
                   <Image
-                    src="/assets/dexlogo.png"
+                    src={dexlogoIconSignedUrl || "/assets/dexlogo.png"}
                     alt="Dex Screener"
                     width={20}
                     height={20}
@@ -593,52 +632,52 @@ const TerminalHero = () => {
         onClose={() => setIsAirdropOpen(false)}
       />
 
-<style jsx global>{`
-  @keyframes scan {
-    from {
-      transform: translateY(0);
-    }
-    to {
-      transform: translateY(4px);
-    }
-  }
-  @media (max-width: 640px) {
-    .whitespace-pre {
-      white-space: pre;
-      font-size: 6px; /* Reduced font size for mobile */
-      letter-spacing: 0;
-    }
-  }
-  @media (min-width: 641px) and (max-width: 768px) {
-    .whitespace-pre {
-      white-space: pre;
-      font-size: 8px; /* Slightly larger for small tablets */
-      letter-spacing: 0.02em;
-    }
-  }
+      <style jsx global>{`
+        @keyframes scan {
+          from {
+            transform: translateY(0);
+          }
+          to {
+            transform: translateY(4px);
+          }
+        }
+        @media (max-width: 640px) {
+          .whitespace-pre {
+            white-space: pre;
+            font-size: 6px; /* Reduced font size for mobile */
+            letter-spacing: 0;
+          }
+        }
+        @media (min-width: 641px) and (max-width: 768px) {
+          .whitespace-pre {
+            white-space: pre;
+            font-size: 8px; /* Slightly larger for small tablets */
+            letter-spacing: 0.02em;
+          }
+        }
 
-  /* Custom Scrollbar Styles */
-  ::-webkit-scrollbar {
-    width: 10px;
-    background: rgba(23, 82, 240, 0.1);
-  }
+        /* Custom Scrollbar Styles */
+        ::-webkit-scrollbar {
+          width: 10px;
+          background: rgba(23, 82, 240, 0.1);
+        }
 
-  ::-webkit-scrollbar-thumb {
-    background: #1752f0;
-    border-radius: 4px;
-    border: 2px solid #00008b;
-  }
+        ::-webkit-scrollbar-thumb {
+          background: #1752f0;
+          border-radius: 4px;
+          border: 2px solid #00008b;
+        }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: #1142c0;
-  }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #1142c0;
+        }
 
-  /* Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #1752f0 rgba(23, 82, 240, 0.1);
-  }
-`}</style>
+        /* Firefox */
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: #1752f0 rgba(23, 82, 240, 0.1);
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import Image from "next/image";
+import { useAsset } from "@/hooks/useAssets";
 
 interface AirdropModalProps {
   isOpen: boolean;
@@ -8,9 +9,25 @@ interface AirdropModalProps {
 }
 
 const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
+  // Hook para el logo de MoonXBT
+  const {
+    signedUrl: logoSignedUrl,
+    isLoading: logoLoading,
+    error: logoError,
+  } = useAsset(
+    "a0x-mirror-storage",
+    "assets/moonxbt.png",
+    3600 // 1 hora
+  );
+
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" open={isOpen} onClose={onClose}>
+      <Dialog
+        as="div"
+        className="relative z-50"
+        open={isOpen}
+        onClose={onClose}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -48,7 +65,7 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                 <div className="flex justify-center mt-6 sm:mt-7 mb-2">
                   <div className="rounded-full border border-white p-1 bg-[#1a6aff]">
                     <Image
-                      src="/assets/moonxbt.png"
+                      src={logoSignedUrl || "/assets/moonxbt.png"}
                       alt="MoonXBT"
                       width={60}
                       height={60}
@@ -58,9 +75,15 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                 </div>
                 {/* TOKEN_DISTRIBUTION Section */}
                 <div className="w-[96%] border border-white rounded-md sm:rounded-lg bg-[#1a6aff] px-2 py-4 sm:px-4 sm:py-6 flex flex-col items-center mb-4 sm:mb-6">
-                  <div className="text-white font-mono text-sm sm:text-lg mb-2 sm:mb-3 tracking-widest text-center uppercase break-words">[ TOKEN_DISTRIBUTION ]</div>
-                  <div className="font-mono text-3xl sm:text-5xl font-extrabold tracking-widest mb-2 text-center">20%</div>
-                  <div className="text-white text-sm sm:text-base text-center font-mono font-light mt-1 sm:mt-2 break-words">of total supply for airdrop</div>
+                  <div className="text-white font-mono text-sm sm:text-lg mb-2 sm:mb-3 tracking-widest text-center uppercase break-words">
+                    [ TOKEN_DISTRIBUTION ]
+                  </div>
+                  <div className="font-mono text-3xl sm:text-5xl font-extrabold tracking-widest mb-2 text-center">
+                    20%
+                  </div>
+                  <div className="text-white text-sm sm:text-base text-center font-mono font-light mt-1 sm:mt-2 break-words">
+                    of total supply for airdrop
+                  </div>
                 </div>
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-2 w-[96%]">
@@ -88,10 +111,18 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
                 <style jsx global>{`
                   @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap");
                   @keyframes blink {
-                    0%, 50% { opacity: 1; }
-                    51%, 100% { opacity: 0; }
+                    0%,
+                    50% {
+                      opacity: 1;
+                    }
+                    51%,
+                    100% {
+                      opacity: 0;
+                    }
                   }
-                  .animate-blink { animation: blink 1s steps(1) infinite; }
+                  .animate-blink {
+                    animation: blink 1s steps(1) infinite;
+                  }
                 `}</style>
               </Dialog.Panel>
             </Transition.Child>
