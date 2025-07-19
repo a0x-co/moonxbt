@@ -110,11 +110,14 @@ class AssetManager {
       cached.expiresAt &&
       Date.now() < cached.expiresAt
     ) {
+      console.log(`📁 [ASSETS] Using cached signed URL for: ${key}`);
       return {
         signedUrl: cached.signedUrl,
         expiresAt: cached.expiresAt,
       };
     }
+
+    console.log(`🔗 [ASSETS] Fetching signed URL for: ${key}`);
 
     // Set loading state
     this.cache[key] = {
@@ -139,7 +142,12 @@ class AssetManager {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to get signed URL: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage =
+          errorData.details ||
+          errorData.error ||
+          `Failed to get signed URL: ${response.statusText}`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -161,8 +169,12 @@ class AssetManager {
       this.notifySubscribers(bucketName, filePath, this.cache[key]);
       this.scheduleRefresh(bucketName, filePath, asset.expiresAt);
 
+      console.log(
+        `✅ [ASSETS] Signed URL cached for: ${key}, expires: ${data.expiresAt}`
+      );
       return asset;
     } catch (error) {
+      console.error(`❌ [ASSETS] Failed to get signed URL for: ${key}`, error);
       const errorMessage =
         error instanceof Error ? error.message : "Failed to get signed URL";
       this.cache[key] = {

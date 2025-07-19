@@ -65,7 +65,7 @@ export async function POST(
       process.env.A0X_MIRROR_API_URL || "http://localhost:3001";
 
     // Forward the request to the backend
-    const response = await fetch(`${backendUrl}/signed-asset-url`, {
+    const response = await fetch(`${backendUrl}/agents/signed-asset-url`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,8 +79,34 @@ export async function POST(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
+      // Handle specific backend errors
+      if (response.status === 404) {
+        return NextResponse.json(
+          {
+            error: "Asset not found",
+            details: "The requested file does not exist",
+          },
+          { status: 404 }
+        );
+      }
+
+      if (response.status === 403) {
+        return NextResponse.json(
+          {
+            error: "Access denied",
+            details: "Insufficient permissions to access the file",
+          },
+          { status: 403 }
+        );
+      }
+
       return NextResponse.json(
-        { error: errorData.error || "Failed to get signed URL from backend" },
+        {
+          error: "Failed to get signed URL",
+          details:
+            errorData.error || errorData.details || "Unknown backend error",
+        },
         { status: response.status }
       );
     }
@@ -136,15 +162,41 @@ export async function GET(
 
     // Forward the request to the backend
     const response = await fetch(
-      `${backendUrl}/signed-asset-url?bucketName=${encodeURIComponent(
+      `${backendUrl}/agents/signed-asset-url?bucketName=${encodeURIComponent(
         bucketName
       )}&filePath=${encodeURIComponent(filePath)}&expiresIn=${expiresIn}`
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
+      // Handle specific backend errors
+      if (response.status === 404) {
+        return NextResponse.json(
+          {
+            error: "Asset not found",
+            details: "The requested file does not exist",
+          },
+          { status: 404 }
+        );
+      }
+
+      if (response.status === 403) {
+        return NextResponse.json(
+          {
+            error: "Access denied",
+            details: "Insufficient permissions to access the file",
+          },
+          { status: 403 }
+        );
+      }
+
       return NextResponse.json(
-        { error: errorData.error || "Failed to get signed URL from backend" },
+        {
+          error: "Failed to get signed URL",
+          details:
+            errorData.error || errorData.details || "Unknown backend error",
+        },
         { status: response.status }
       );
     }
