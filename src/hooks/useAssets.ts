@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { isLocalAsset, getLocalAssetUrl } from "@/lib/utils";
 
 interface AssetRequest {
   bucketName: string;
@@ -371,5 +372,116 @@ export function useAsset(
   return {
     ...state,
     reload,
+  };
+}
+
+// Hook optimizado que usa assets locales cuando están disponibles
+export function useOptimizedAsset(
+  bucketName: string,
+  filePath: string,
+  expiresIn: number = 3600,
+  autoLoad: boolean = true
+) {
+  // Siempre llamar al hook original para mantener las reglas de React
+  const remoteAsset = useAsset(bucketName, filePath, expiresIn, autoLoad);
+
+  // Si es un asset local, devolver directamente
+  if (isLocalAsset(filePath)) {
+    return {
+      signedUrl: getLocalAssetUrl(filePath),
+      isLoading: false,
+      error: null,
+      expiresAt: null,
+      reload: () => {}, // No-op para assets locales
+    };
+  }
+
+  // Para assets remotos, usar el resultado del hook original
+  return remoteAsset;
+}
+
+// Hook optimizado para múltiples assets
+export function useOptimizedAssets() {
+  const { getAsset, getAssets, getAssetState, preloadAsset, clearCache } =
+    useAssets();
+
+  const getOptimizedAsset = useCallback(
+    async (
+      bucketName: string,
+      filePath: string,
+      expiresIn: number = 3600
+    ): Promise<Asset> => {
+      // Si es un asset local, devolver directamente
+      if (isLocalAsset(filePath)) {
+        return {
+          signedUrl: getLocalAssetUrl(filePath),
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 horas para assets locales
+        };
+      }
+
+      // Para assets remotos, usar el método original
+      return getAsset(bucketName, filePath, expiresIn);
+    },
+    [getAsset]
+  );
+
+  const getOptimizedAssets = useCallback(
+    async (requests: AssetRequest[]): Promise<Asset[]> => {
+      const promises = requests.map(async (request) => {
+        if (isLocalAsset(request.filePath)) {
+          return {
+            signedUrl: getLocalAssetUrl(request.filePath),
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 horas para assets locales
+          };
+        }
+        return getAsset(
+          request.bucketName,
+          request.filePath,
+          request.expiresIn
+        );
+      });
+
+      return Promise.all(promises);
+    },
+    [getAsset]
+  );
+
+  const getOptimizedAssetState = useCallback(
+    (bucketName: string, filePath: string): AssetState => {
+      // Si es un asset local, devolver estado optimizado
+      if (isLocalAsset(filePath)) {
+        return {
+          signedUrl: getLocalAssetUrl(filePath),
+          isLoading: false,
+          error: null,
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 horas para assets locales
+        };
+      }
+
+      // Para assets remotos, usar el método original
+      return getAssetState(bucketName, filePath);
+    },
+    [getAssetState]
+  );
+
+  const preloadOptimizedAsset = useCallback(
+    (bucketName: string, filePath: string, expiresIn: number = 3600) => {
+      // No preload para assets locales
+      if (isLocalAsset(filePath)) {
+        return;
+      }
+
+      // Para assets remotos, usar el método original
+      preloadAsset(bucketName, filePath, expiresIn);
+    },
+    [preloadAsset]
+  );
+
+  return {
+    getAsset: getOptimizedAsset,
+    getAssets: getOptimizedAssets,
+    getAssetState: getOptimizedAssetState,
+    preloadAsset: preloadOptimizedAsset,
+    clearCache,
   };
 }

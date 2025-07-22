@@ -50,7 +50,7 @@ import debounce from "lodash/debounce";
 import { usePrivy } from "@privy-io/react-auth";
 import { useDisconnect } from "wagmi";
 import { useLogout } from "@privy-io/react-auth";
-import { useAssets, useAsset } from "@/hooks/useAssets";
+import { useAssets, useOptimizedAsset } from "@/hooks/useAssets";
 
 interface Task {
   id: string;
@@ -79,7 +79,11 @@ const SignedIcon = ({
   height?: number;
   className?: string;
 }) => {
-  const { signedUrl, isLoading, error } = useAsset(bucketName, filePath, 3600);
+  const { signedUrl, isLoading, error } = useOptimizedAsset(
+    bucketName,
+    filePath,
+    3600
+  );
 
   return (
     <Image

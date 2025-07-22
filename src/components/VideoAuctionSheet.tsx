@@ -10,7 +10,7 @@ import {
 } from "@/constants/contracts";
 import { useApprove } from "@/hooks/useApprove";
 import { useAuctionData } from "@/hooks/useAuctionData";
-import { useAsset } from "@/hooks/useAssets";
+import { useOptimizedAsset } from "@/hooks/useAssets";
 import {
   useLogout,
   usePrivy,
@@ -103,14 +103,14 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     signedUrl: auctionVideoSignedUrl,
     isLoading: auctionVideoLoading,
     error: auctionVideoError,
-  } = useAsset(
+  } = useOptimizedAsset(
     "a0x-mirror-storage",
     "assets/moonxbtauction.mp4",
     3600 // 1 hora
   );
 
   // Hook para el logo de Base Network
-  const { signedUrl: baseLogoSignedUrl } = useAsset(
+  const { signedUrl: baseLogoSignedUrl } = useOptimizedAsset(
     "a0x-mirror-storage",
     "assets/Base_Network_Logo.svg",
     3600 // 1 hora

@@ -1,7 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import Image from "next/image";
-import { useAsset } from "@/hooks/useAssets";
+import { useOptimizedAsset } from "@/hooks/useAssets";
 
 interface AirdropModalProps {
   isOpen: boolean;
@@ -14,7 +14,7 @@ const AirdropModal = ({ isOpen, onClose }: AirdropModalProps) => {
     signedUrl: logoSignedUrl,
     isLoading: logoLoading,
     error: logoError,
-  } = useAsset(
+  } = useOptimizedAsset(
     "a0x-mirror-storage",
     "assets/moonxbt.png",
     3600 // 1 hora
