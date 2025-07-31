@@ -338,7 +338,7 @@ const TerminalHero = () => {
               show={showMobileVideo}
               videoUrl={
                 videoSignedUrl ||
-                "https://storage.googleapis.com/a0x-mirror-storage/agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747863974236.mp4"
+                "https://storage.googleapis.com/a0x-co-storage/agents-videos/3e444822-7a6c-0e5d-a36d-7087fb23685b-1753933487752.mp4"
               }
             />
           </motion.div>
