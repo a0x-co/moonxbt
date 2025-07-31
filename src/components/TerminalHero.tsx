@@ -96,34 +96,34 @@ const TerminalHero = () => {
     isLoading: videoLoading,
     error: videoError,
   } = useOptimizedAsset(
-    "a0x-mirror-storage",
-    "agents-videos/2d11e5a1-4dd5-0d31-8d7d-4146c3934f41-1747863974236.mp4",
-    7200 // 2 horas
+    "a0x-co-storage",
+    "agents-videos/3e444822-7a6c-0e5d-a36d-7087fb23685b-1753933487752.mp4",
+    86400 // 24 horas
   );
 
   // Hooks para los iconos de redes sociales
   const { signedUrl: xIconSignedUrl } = useOptimizedAsset(
-    "a0x-mirror-storage",
+    "a0x-co-storage",
     "assets/x.png",
-    3600 // 1 hora
+    86400 // 24 horas
   );
 
   const { signedUrl: farcasterIconSignedUrl } = useOptimizedAsset(
-    "a0x-mirror-storage",
+    "a0x-co-storage",
     "assets/farcaster.png",
-    3600 // 1 hora
+    86400 // 24 horas
   );
 
   const { signedUrl: zoraIconSignedUrl } = useOptimizedAsset(
-    "a0x-mirror-storage",
+    "a0x-co-storage",
     "assets/zora.png",
-    3600 // 1 hora
+    86400 // 24 horas
   );
 
   const { signedUrl: dexlogoIconSignedUrl } = useOptimizedAsset(
-    "a0x-mirror-storage",
+    "a0x-co-storage",
     "assets/dexlogo.png",
-    3600 // 1 hora
+    86400 // 24 horas
   );
 
   const bannerLines = [
