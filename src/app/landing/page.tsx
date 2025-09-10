@@ -13,6 +13,14 @@ import coinIcon from "./png/coin_icon_1@2x-8.png";
 import giftIcon from "./png/gift_icon_1@2x-8.png";
 import moonPfp from "./png/moon.jpeg";
 import CustomCursor from "./CustomCursor";
+import {
+  SiX,
+  SiFarcaster,
+  SiTiktok,
+  SiTelegram,
+  SiInstagram,
+} from "react-icons/si";
+import TerminalSnippet from "@/components/TerminalSnippet";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -37,6 +45,11 @@ export default function LandingPage() {
           className="object-cover"
           draggable={false}
         />
+      </div>
+
+      {/* Terminal snippet above dialog */}
+      <div className="pointer-events-none absolute right-[90px] bottom-[300px] md:bottom-[340px] z-10 hidden md:block">
+        <TerminalSnippet />
       </div>
 
       {/* Dialog + Profile pic (bottom-right) */}
@@ -144,101 +157,84 @@ export default function LandingPage() {
       <footer className="pointer-events-auto absolute inset-x-0 bottom-10 md:bottom-14 z-10">
         <div className="mx-auto flex items-center justify-center gap-5 md:gap-7 text-white/90">
           <a
-            href="https://x.com/"
+            href="https://x.com/moonXBT_ai"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="X"
             className="cursor-none"
           >
-            <Image
-              src="/x.png"
-              alt="X"
-              width={22}
-              height={22}
-              className="opacity-90 hover:opacity-100 transition"
-              draggable={false}
+            <SiX
+              aria-hidden
+              className="text-white opacity-90 hover:opacity-100 transition"
+              size={22}
             />
           </a>
           <a
-            href="https://www.farcaster.xyz/"
+            href="https://warpcast.com/ai420z"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Farcaster"
             className="cursor-none"
           >
-            <Image
-              src="/farcaster.png"
-              alt="Farcaster"
-              width={22}
-              height={22}
-              className="opacity-90 hover:opacity-100 transition"
-              draggable={false}
+            <SiFarcaster
+              aria-hidden
+              className="text-white opacity-90 hover:opacity-100 transition"
+              size={22}
             />
           </a>
           <a
-            href="https://www.tiktok.com/"
+            href="https://www.tiktok.com/@moonxbt.fun"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="TikTok"
             className="opacity-90 hover:opacity-100 transition cursor-none"
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-white"
-            >
-              <path d="M13.5 3h3.2c.3 2.2 1.7 3.6 3.8 3.8V10c-1.6-.1-3-.6-4.4-1.5v6.3c0 3.7-2.7 6.2-6.3 6.2-3.3 0-6-2.7-6-6 0-3.2 2.5-5.8 5.7-6 .6 0 1.3.1 1.9.3v3.3c-.5-.2-1-.3-1.6-.3-1.6.1-2.8 1.4-2.8 3 0 1.7 1.4 3.1 3.2 3.1 1.8 0 3.1-1.3 3.1-3.1V3z" />
-            </svg>
+            <SiTiktok aria-hidden className="text-white" size={22} />
           </a>
           <a
-            href="https://t.me/"
+            href="https://t.me/A0X_Portal"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Telegram"
             className="opacity-90 hover:opacity-100 transition cursor-none"
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-white"
-            >
-              <path d="M21.9 4.1c.4.2.5.6.4 1l-3.5 14.8c-.1.5-.6.7-1 .5l-4.1-2.9-2 2c-.2.2-.6.1-.7-.2l-.1-3.4 7.8-7-9.6 6.1-3.3-1.1c-.5-.2-.5-.9.1-1.1L21 4.1c.3-.1.6-.1.9 0z" />
-            </svg>
+            <SiTelegram aria-hidden className="text-white" size={22} />
           </a>
           <a
-            href="https://instagram.com/"
+            href="https://www.instagram.com/moonxbt_ai"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
             className="opacity-90 hover:opacity-100 transition cursor-none"
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-white"
-            >
-              <path d="M7 2h10c2.8 0 5 2.2 5 5v10c0 2.8-2.2 5-5 5H7c-2.8 0-5-2.2-5-5V7c0-2.8 2.2-5 5-5zm0 2C5.3 4 4 5.3 4 7v10c0 1.7 1.3 3 3 3h10c1.7 0 3-1.3 3-3V7c0-1.7-1.3-3-3-3H7zm5 3.5A5.5 5.5 0 1112 20a5.5 5.5 0 010-11zm0 2A3.5 3.5 0 1015.5 13 3.5 3.5 0 0012 9.5zM18 6.5a1 1 0 11-1 1 1 1 0 011-1z" />
-            </svg>
+            <SiInstagram aria-hidden className="text-white" size={22} />
           </a>
           <a
-            href="https://zora.co/"
+            href="https://zora.co/@moonxbt"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Zora"
             className="cursor-none"
           >
             <Image
-              src="/zora.png"
+              src="/assets/zora.png"
               alt="Zora"
+              width={22}
+              height={22}
+              className="opacity-90 hover:opacity-100 transition"
+              draggable={false}
+            />
+          </a>
+          <a
+            href="https://dexscreener.com/base/0xa1a65c284a2e01f0d9c9683edeab30d0835d1362"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Dex Screener"
+            className="cursor-none"
+          >
+            <Image
+              src="/assets/dexlogo.png"
+              alt="Dex Screener"
               width={22}
               height={22}
               className="opacity-90 hover:opacity-100 transition"
