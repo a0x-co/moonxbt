@@ -1,5 +1,7 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Press_Start_2P } from "next/font/google";
 
 import bg from "./png/Background_main_1.jpg";
@@ -21,6 +23,8 @@ import {
   SiInstagram,
 } from "react-icons/si";
 import TerminalSnippet from "@/components/TerminalSnippet";
+import AirdropModal from "@/components/AirdropModal";
+import { VideoAuctionSheet } from "@/components/VideoAuctionSheet";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -29,6 +33,8 @@ const press = Press_Start_2P({
 });
 
 export default function LandingPage() {
+  const [isAirdropOpen, setIsAirdropOpen] = useState(false);
+  const [isAuctionOpen, setIsAuctionOpen] = useState(false);
   return (
     <main
       className="relative min-h-screen w-full overflow-hidden [cursor:none] select-none"
@@ -102,31 +108,39 @@ export default function LandingPage() {
         </div>
 
         <div className="mb-10 mt-[90px] md:mt-[102px] lg:mt-[112px] flex items-center justify-center gap-1">
-          <Link href="/" className="cursor-none">
-            <span className="sr-only">Enter app</span>
+          <button
+            type="button"
+            onClick={() => setIsAuctionOpen(true)}
+            className="cursor-none"
+          >
+            <span className="sr-only">Open bid sheet</span>
             <div className="relative h-[56px] w-[160px] md:h-[64px] md:w-[216px] lg:h-[70px] lg:w-[246px] transition hover:brightness-110">
               <Image
                 src={pinkBtn}
-                alt="Enter app"
+                alt="Bid for tomorrow's video"
                 fill
                 className="object-contain"
                 priority
                 draggable={false}
               />
             </div>
-          </Link>
-          <Link href="/leaderboard" className="cursor-none">
-            <span className="sr-only">View leaderboard</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsAirdropOpen(true)}
+            className="cursor-none"
+          >
+            <span className="sr-only">Open airdrop</span>
             <div className="relative h-[56px] w-[160px] md:h-[64px] md:w-[216px] lg:h-[70px] lg:w-[246px] transition hover:brightness-110">
               <Image
                 src={yellowBtn}
-                alt="View leaderboard"
+                alt="Open airdrop"
                 fill
                 className="object-contain"
                 draggable={false}
               />
             </div>
-          </Link>
+          </button>
         </div>
 
         <div className="relative">
@@ -249,6 +263,14 @@ export default function LandingPage() {
           incididunt ut labore et dolore magna aliqua.
         </p>
       </footer>
+      <AirdropModal
+        isOpen={isAirdropOpen}
+        onClose={() => setIsAirdropOpen(false)}
+      />
+      <VideoAuctionSheet
+        isOpen={isAuctionOpen}
+        onClose={() => setIsAuctionOpen(false)}
+      />
     </main>
   );
 }

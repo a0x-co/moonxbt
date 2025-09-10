@@ -13,10 +13,12 @@ const TypeWriter = ({
   text,
   className,
   onComplete,
+  intervalMs = 15,
 }: {
   text: string;
   className?: string;
   onComplete?: () => void;
+  intervalMs?: number;
 }) => {
   const [displayed, setDisplayed] = useState("");
   const indexRef = useRef(0);
@@ -38,14 +40,14 @@ const TypeWriter = ({
         if (!char) return;
         setDisplayed((prev) => prev + char);
         indexRef.current = i + 1;
-      }, 15);
+      }, intervalMs);
       return () => clearTimeout(t);
     }
     if (!doneRef.current) {
       doneRef.current = true;
       if (onComplete) onComplete();
     }
-  }, [displayed, safeText]);
+  }, [displayed, safeText, intervalMs]);
 
   return (
     <span className={className}>
@@ -54,6 +56,87 @@ const TypeWriter = ({
         <span className="inline-block w-1 h-3 ml-0.5 bg-white/80 align-middle animate-pulse" />
       )}
     </span>
+  );
+};
+
+// Specialized writer for multi-line ASCII banners: types all lines in parallel
+const BannerWriter = ({
+  lines,
+  onComplete,
+  intervalMs = 8,
+  staggerMs = 80,
+}: {
+  lines: string[];
+  onComplete?: () => void;
+  intervalMs?: number;
+  staggerMs?: number;
+}) => {
+  const [progress, setProgress] = useState<number[]>(() =>
+    new Array(lines.length).fill(0)
+  );
+  const [blink, setBlink] = useState(true);
+  const startRef = useRef<number>(Date.now());
+  const doneRef = useRef(false);
+
+  useEffect(() => {
+    setProgress(new Array(lines.length).fill(0));
+    startRef.current = Date.now();
+    doneRef.current = false;
+  }, [lines]);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const now = Date.now();
+      setProgress((prev) => {
+        const updated = [...prev];
+        let changed = false;
+        for (let i = 0; i < lines.length; i++) {
+          const delay = i * staggerMs;
+          if (now - startRef.current >= delay && updated[i] < lines[i].length) {
+            updated[i] = Math.min(lines[i].length, updated[i] + 1);
+            changed = true;
+          }
+        }
+        return changed ? updated : prev;
+      });
+    }, intervalMs);
+
+    const blinkId = setInterval(() => setBlink((b) => !b), 800);
+    return () => {
+      clearInterval(id);
+      clearInterval(blinkId);
+    };
+  }, [lines, intervalMs, staggerMs]);
+
+  useEffect(() => {
+    if (doneRef.current) return;
+    const finished = progress.every((p, idx) => p >= lines[idx].length);
+    if (finished) {
+      doneRef.current = true;
+      onComplete && onComplete();
+    }
+  }, [progress, lines, onComplete]);
+
+  return (
+    <div className="whitespace-pre font-mono text-white/80 tracking-wide text-[11px] md:text-[12px]">
+      {lines.map((ln, i) => {
+        const p = progress[i];
+        const showing = ln.slice(0, p);
+        const done = p >= ln.length;
+        return (
+          <div key={`banner-line-${i}`}>
+            {showing}
+            {!done && (
+              <span
+                className={`inline-block h-4 w-1 align-middle ml-1 ${
+                  blink ? "bg-white/80" : "bg-transparent"
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 };
 
@@ -91,17 +174,20 @@ export default function TerminalSnippet() {
     []
   );
 
-  const bannerLines = [
-    "                                             /$$   /$$ /$$$$$$$  /$$$$$$$$",
-    "                                            | $$  / $$| $$__  $$|__  $$__/",
-    " /$$$$$$/$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ |  $$/ $$/| $$    $$   | $$   ",
-    "| $$_  $$_  $$ /$$__  $$ /$$__  $$| $$__  $$    $$$$/ | $$$$$$$    | $$",
-    "| $$   $$   $$| $$    $$| $$    $$| $$    $$  >$$  $$ | $$__  $$   | $$",
-    "| $$ | $$ | $$| $$  | $$| $$  | $$| $$  | $$ /$$/   $$| $$    $$   | $$ ",
-    "| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",
-    "|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",
-  ];
-  const bannerText = bannerLines.join("\n");
+  const bannerLines = useMemo(
+    () => [
+      "                                             /$$   /$$ /$$$$$$$  /$$$$$$$$",
+      "                                            | $$  / $$| $$__  $$|__  $$__/",
+      " /$$$$$$/$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ |  $$/ $$/| $$    $$   | $$   ",
+      "| $$_  $$_  $$ /$$__  $$ /$$__  $$| $$__  $$    $$$$/ | $$$$$$$    | $$",
+      "| $$   $$   $$| $$    $$| $$    $$| $$    $$  >$$  $$ | $$__  $$   | $$",
+      "| $$ | $$ | $$| $$  | $$| $$  | $$| $$  | $$ /$$/   $$| $$    $$   | $$ ",
+      "| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",
+      "|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",
+    ],
+    []
+  );
+  const bannerText = useMemo(() => bannerLines.join("\n"), [bannerLines]);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -115,22 +201,24 @@ export default function TerminalSnippet() {
     const first = combined[0];
     if (first) setCurrentLine(first);
     remainingRef.current = combined.slice(1);
-  }, [script, bannerText]);
+    // Do not include bannerText as a dependency to avoid re-running
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [script]);
 
   const remainingRef = useRef<TerminalLine[]>([]);
 
   const handleLineComplete = () => {
-    if (currentLine) {
-      setCompletedLines((prev) => [...prev, currentLine]);
-    }
+    if (!currentLine) return;
+    const finished = currentLine;
+    setCurrentLine(null);
+    setCompletedLines((prev) => [...prev, finished]);
     const next = remainingRef.current.shift();
     if (next) {
+      const delayMs = next.id === "banner" ? 600 : 250;
       setTimeout(
         () => setCurrentLine({ ...next, timestamp: getTimestamp() }),
-        350
+        delayMs
       );
-    } else {
-      setCurrentLine(null);
     }
   };
 
@@ -146,18 +234,20 @@ export default function TerminalSnippet() {
           if (!line) return null;
           return (
             <div key={line.id} className="mb-2">
-              <div className="flex items-baseline gap-2">
-                {line.timestamp && (
-                  <span className="text-white/40 font-mono text-[10px]">
-                    [{line.timestamp}]
-                  </span>
-                )}
-                {line.username && (
-                  <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
-                    {line.username}:
-                  </span>
-                )}
-              </div>
+              {(line.timestamp || line.username) && (
+                <div className="flex items-baseline gap-2">
+                  {line.timestamp && (
+                    <span className="text-white/40 font-mono text-[10px]">
+                      [{line.timestamp}]
+                    </span>
+                  )}
+                  {line.username && (
+                    <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
+                      {line.username}:
+                    </span>
+                  )}
+                </div>
+              )}
               <span
                 className={`text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] ${
                   line.id === "banner"
@@ -172,27 +262,35 @@ export default function TerminalSnippet() {
         })}
         {currentLine && (
           <div key={currentLine.id} className="mb-2">
-            <div className="flex items-baseline gap-2">
-              {currentLine.timestamp && (
-                <span className="text-white/40 font-mono text-[10px]">
-                  [{currentLine.timestamp}]
-                </span>
-              )}
-              {currentLine.username && (
-                <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
-                  {currentLine.username}:
-                </span>
-              )}
-            </div>
-            <TypeWriter
-              text={currentLine.message}
-              className={`text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] ${
-                currentLine.id === "banner"
-                  ? "whitespace-pre"
-                  : "whitespace-pre-wrap break-words"
-              }`}
-              onComplete={handleLineComplete}
-            />
+            {currentLine.id !== "banner" && (
+              <div className="flex items-baseline gap-2">
+                {currentLine.timestamp && (
+                  <span className="text-white/40 font-mono text-[10px]">
+                    [{currentLine.timestamp}]
+                  </span>
+                )}
+                {currentLine.username && (
+                  <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
+                    {currentLine.username}:
+                  </span>
+                )}
+              </div>
+            )}
+            {currentLine.id === "banner" ? (
+              <BannerWriter
+                lines={bannerLines}
+                onComplete={handleLineComplete}
+                intervalMs={8}
+                staggerMs={80}
+              />
+            ) : (
+              <TypeWriter
+                text={currentLine.message}
+                className="text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] whitespace-pre-wrap break-words"
+                onComplete={handleLineComplete}
+                intervalMs={15}
+              />
+            )}
           </div>
         )}
         <span

@@ -42,7 +42,7 @@ export default function CustomCursor() {
       aria-hidden
       className="pointer-events-none fixed left-0 top-0 z-[9999] select-none"
       style={{
-        transform: `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(${
+        transform: `translate3d(${x}px, ${y}px, 0) translate(-35%, -40%) scale(${
           pressed ? 0.9 : 1
         })`,
         transition: "transform 120ms ease, opacity 150ms ease",

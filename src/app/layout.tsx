@@ -15,8 +15,17 @@ import "./globals.css";
 import { getServerSession } from "./api/auth/options";
 
 // const inter = Inter({ subsets: ["latin"] });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], display: "swap", variable: "--font-space-grotesk" });
-const orbitron = Orbitron({ subsets: ["latin"], display: "swap", variable: "--font-orbitron", weight: "400" });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-space-grotesk",
+});
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-orbitron",
+  weight: "400",
+});
 
 export const metadata: Metadata = {
   title: "MoonXBT",
@@ -35,7 +44,9 @@ export default async function RootLayout({
   const initialState = cookieToInitialState(config, cookieStr);
   return (
     <html lang="en">
-      <body className={`${orbitron.variable} ${spaceGrotesk.variable} font-spaceGrotesk antialiased`}>
+      <body
+        className={`${orbitron.variable} ${spaceGrotesk.variable} font-spaceGrotesk antialiased`}
+      >
         <Web3ModalProvider initialState={initialState} session={session}>
           {children}
         </Web3ModalProvider>
