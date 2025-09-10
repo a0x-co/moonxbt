@@ -101,21 +101,21 @@ export default function TerminalSnippet() {
     "| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",
     "|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",
   ];
+  const bannerText = bannerLines.join("\n");
 
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
 
     const combined: TerminalLine[] = [
-      ...script.map((l) => ({ ...l })),
-      ...bannerLines.map((msg, idx) => ({ id: `banner-${idx}`, message: msg })),
+      ...script.map((l) => ({ ...l, timestamp: getTimestamp() })),
+      { id: "banner", message: bannerText },
     ];
 
     const first = combined[0];
-    if (first) setCurrentLine({ ...first, timestamp: getTimestamp() });
-    // store remaining in ref for sequential processing
+    if (first) setCurrentLine(first);
     remainingRef.current = combined.slice(1);
-  }, [script]);
+  }, [script, bannerText]);
 
   const remainingRef = useRef<TerminalLine[]>([]);
 
@@ -160,7 +160,7 @@ export default function TerminalSnippet() {
               </div>
               <span
                 className={`text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] ${
-                  line.id.startsWith("banner-")
+                  line.id === "banner"
                     ? "whitespace-pre"
                     : "whitespace-pre-wrap break-words"
                 }`}
@@ -187,7 +187,7 @@ export default function TerminalSnippet() {
             <TypeWriter
               text={currentLine.message}
               className={`text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] ${
-                currentLine.id.startsWith("banner-")
+                currentLine.id === "banner"
                   ? "whitespace-pre"
                   : "whitespace-pre-wrap break-words"
               }`}
