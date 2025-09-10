@@ -1,10 +1,5 @@
-import { ChatSheetProvider } from "@/context/ChatSheetContext";
-import TerminalHero from "@/components/TerminalHero";
+import LandingPage from "./landing/page";
 
 export default function Home() {
-  return (
-    <ChatSheetProvider>
-      <TerminalHero />
-    </ChatSheetProvider>
-  );
+  return <LandingPage />;
 }

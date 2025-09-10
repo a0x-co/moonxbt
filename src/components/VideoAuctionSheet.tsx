@@ -416,16 +416,15 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-start z-50 bg-muted">
-      {/* Close Button */}
-      <button
+    <div className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-start z-50 cursor-none">
+      {/* Backdrop - click to close (matches AirdropModal behavior) */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-none"
         onClick={onClose}
-        className="fixed top-4 right-4 text-muted-foreground text-2xl font-bold hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded transition z-20"
-        aria-label="Close"
-      >
-        ×
-      </button>
-      <div className="w-full flex justify-center pt-8 pb-2">
+      />
+      {/* Close Button */}
+      {/* Close button is now inside the modal card below */}
+      <div className="w-full flex justify-center pt-8 pb-2 relative z-10">
         <Image
           src="/assets/moonxbt.png"
           alt="MoonXBT"
@@ -435,10 +434,18 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         />
       </div>
       <div
-        className="w-full flex justify-center px-4 sm:px-8 md:px-12 overflow-y-auto"
+        className="w-full flex justify-center px-4 sm:px-8 md:px-12 overflow-y-auto relative z-10 cursor-none"
         style={{ maxHeight: "95vh" }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <Card className="w-full max-w-xl mx-auto p-0">
+        <Card className="relative w-full max-w-3xl mx-auto p-6 sm:p-8">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white text-4xl sm:text-5xl font-extrabold border border-white/70 shadow-xl backdrop-blur cursor-none"
+            aria-label="Close"
+          >
+            ×
+          </button>
           {/* Header Section */}
           <div className="flex flex-col items-center gap-1 pb-2 pt-6">
             <h1 className="font-sora font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight text-center leading-tight antialiased">
@@ -450,9 +457,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
           </div>
           <Separator className="mb-2" />
           {/* Auction Status Area: Responsive layout */}
-          <div className="w-full flex flex-col sm:flex-row items-center sm:items-start justify-center gap-6 sm:gap-10 mb-4">
+          <div className="w-full flex flex-col sm:flex-row items-center sm:items-start justify-center gap-6 sm:gap-10 mb-6">
             {/* Left: Winning video card (desktop: left column, mobile: top) */}
-            <div className="flex-1 w-full max-w-[380px] min-h-[340px] bg-gradient-to-br from-muted/80 to-white/90 border border-border rounded-2xl shadow-xl px-4 py-6 flex flex-col items-center justify-center gap-3 mb-2 sm:mb-0 text-center">
+            <div className="flex-1 w-full max-w-[480px] min-h-[340px] bg-gradient-to-br from-muted/80 to-white/90 border border-border rounded-2xl shadow-xl px-6 py-6 flex flex-col items-center justify-center gap-3 mb-2 sm:mb-0 text-center">
               <span className="bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-widest mb-2">
                 Winning Video
               </span>
@@ -483,7 +490,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 )}
             </div>
             {/* Right: Last auction winner/status box (desktop: right column, mobile: below video) */}
-            <div className="flex-1 w-full max-w-[380px] min-h-[220px] sm:min-h-[340px] bg-white/90 rounded-2xl shadow-xl px-4 py-3 sm:py-6 flex flex-col items-center sm:items-end justify-center gap-2 sm:gap-4 text-center sm:text-right">
+            <div className="flex-1 w-full max-w-[480px] min-h-[220px] sm:min-h-[340px] bg-white/90 rounded-2xl shadow-xl px-6 py-5 sm:py-6 flex flex-col items-center sm:items-end justify-center gap-2 sm:gap-4 text-center sm:text-right">
               {lastAuctionWinner && (
                 <div className="flex flex-col items-center sm:items-end gap-1">
                   <span className="inline-flex items-center gap-1 bg-primary/10 border border-primary/20 text-primary font-bold text-xs px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
@@ -558,7 +565,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             </div>
           )}
           {/* Place Bid row below wallet row, same width as boxes and other inputs */}
-          <div className="flex flex-row gap-2 items-center mb-4 w-full">
+          <div className="flex flex-row gap-3 items-center mb-5 w-full">
             <Input
               id="bid-amount"
               type="number"
@@ -641,6 +648,12 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               rows={2}
               disabled={isMainButtonDisabled}
             />
+          </div>
+          {/* Footer note */}
+          <div className="pt-6 text-center">
+            <span className="font-mono text-xs sm:text-sm tracking-widest text-muted-foreground">
+              [ COMING SOON ]
+            </span>
           </div>
         </Card>
       </div>
