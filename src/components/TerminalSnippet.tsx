@@ -6,32 +6,46 @@ interface TerminalLine {
   id: string;
   username?: string;
   message: string;
+  timestamp?: string;
 }
 
 const TypeWriter = ({
   text,
   className,
+  onComplete,
 }: {
   text: string;
   className?: string;
+  onComplete?: () => void;
 }) => {
   const [displayed, setDisplayed] = useState("");
   const indexRef = useRef(0);
+  const safeText = typeof text === "string" ? text : "";
+  const doneRef = useRef(false);
 
   useEffect(() => {
     setDisplayed("");
     indexRef.current = 0;
-  }, [text]);
+    doneRef.current = false;
+  }, [safeText]);
 
   useEffect(() => {
-    if (indexRef.current < text.length) {
+    if (indexRef.current < safeText.length) {
       const t = setTimeout(() => {
-        setDisplayed((prev) => prev + text[indexRef.current]);
-        indexRef.current += 1;
+        const i = indexRef.current;
+        if (i >= safeText.length) return;
+        const char = safeText.charAt(i);
+        if (!char) return;
+        setDisplayed((prev) => prev + char);
+        indexRef.current = i + 1;
       }, 15);
       return () => clearTimeout(t);
     }
-  }, [displayed, text]);
+    if (!doneRef.current) {
+      doneRef.current = true;
+      if (onComplete) onComplete();
+    }
+  }, [displayed, safeText]);
 
   return (
     <span className={className}>
@@ -44,8 +58,14 @@ const TypeWriter = ({
 };
 
 export default function TerminalSnippet() {
-  const [lines, setLines] = useState<TerminalLine[]>([]);
+  const [completedLines, setCompletedLines] = useState<TerminalLine[]>([]);
+  const [currentLine, setCurrentLine] = useState<TerminalLine | null>(null);
   const [cursorOn, setCursorOn] = useState(true);
+  const startedRef = useRef(false);
+  const getTimestamp = () => {
+    const now = new Date();
+    return now.toLocaleTimeString("en-US", { hour12: false });
+  };
 
   const script = useMemo<TerminalLine[]>(
     () => [
@@ -71,20 +91,48 @@ export default function TerminalSnippet() {
     []
   );
 
+  const bannerLines = [
+    "                                             /$$   /$$ /$$$$$$$  /$$$$$$$$",
+    "                                            | $$  / $$| $$__  $$|__  $$__/",
+    " /$$$$$$/$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ |  $$/ $$/| $$    $$   | $$   ",
+    "| $$_  $$_  $$ /$$__  $$ /$$__  $$| $$__  $$    $$$$/ | $$$$$$$    | $$",
+    "| $$   $$   $$| $$    $$| $$    $$| $$    $$  >$$  $$ | $$__  $$   | $$",
+    "| $$ | $$ | $$| $$  | $$| $$  | $$| $$  | $$ /$$/   $$| $$    $$   | $$ ",
+    "| $$ | $$ | $$|  $$$$$$/|  $$$$$$/| $$  | $$| $$    $$| $$$$$$$/   | $$",
+    "|__/ |__/ |__/  ______/   ______/ |__/  |__/|__/  |__/|_______/    |__/",
+  ];
+
   useEffect(() => {
-    let i = 0;
-    let timeout: NodeJS.Timeout | undefined;
-    const addNext = () => {
-      if (i >= script.length) return;
-      const next = script[i];
-      if (!next) return;
-      setLines((prev) => [...prev, next]);
-      i += 1;
-      timeout = setTimeout(addNext, i === 1 ? 1200 : 1600);
-    };
-    addNext();
-    return () => timeout && clearTimeout(timeout);
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    const combined: TerminalLine[] = [
+      ...script.map((l) => ({ ...l })),
+      ...bannerLines.map((msg, idx) => ({ id: `banner-${idx}`, message: msg })),
+    ];
+
+    const first = combined[0];
+    if (first) setCurrentLine({ ...first, timestamp: getTimestamp() });
+    // store remaining in ref for sequential processing
+    remainingRef.current = combined.slice(1);
   }, [script]);
+
+  const remainingRef = useRef<TerminalLine[]>([]);
+
+  const handleLineComplete = () => {
+    if (currentLine) {
+      setCompletedLines((prev) => [...prev, currentLine]);
+    }
+    const next = remainingRef.current.shift();
+    if (next) {
+      setTimeout(
+        () => setCurrentLine({ ...next, timestamp: getTimestamp() }),
+        350
+      );
+    } else {
+      setCurrentLine(null);
+    }
+  };
 
   useEffect(() => {
     const t = setInterval(() => setCursorOn((c) => !c), 800);
@@ -92,37 +140,66 @@ export default function TerminalSnippet() {
   }, []);
 
   return (
-    <div
-      className="w-[340px] md:w-[400px] rounded-xl border border-white/15 bg-white/5 backdrop-blur-[2px] shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-        backgroundSize: "30px 30px",
-      }}
-    >
-      <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-white/30" />
-        <div className="w-2 h-2 rounded-full bg-white/50" />
-        <div className="w-2 h-2 rounded-full bg-white/70" />
-        <span className="ml-2 text-[10px] text-white/70 tracking-wider">
-          moonxbt-terminal
-        </span>
-      </div>
-      <div className="p-4 text-white text-xs leading-relaxed font-mono min-h-[120px]">
-        {lines.map((line) => {
+    <div className="w-[468px] md:w-[676px] text-white/80">
+      <div className="px-1 py-1 text-xs leading-relaxed">
+        {completedLines.map((line) => {
           if (!line) return null;
           return (
             <div key={line.id} className="mb-2">
-              {line.username && (
-                <span className="text-white/60 mr-2">[{line.username}]</span>
-              )}
-              <TypeWriter text={line.message} />
+              <div className="flex items-baseline gap-2">
+                {line.timestamp && (
+                  <span className="text-white/40 font-mono text-[10px]">
+                    [{line.timestamp}]
+                  </span>
+                )}
+                {line.username && (
+                  <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
+                    {line.username}:
+                  </span>
+                )}
+              </div>
+              <span
+                className={`text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] ${
+                  line.id.startsWith("banner-")
+                    ? "whitespace-pre"
+                    : "whitespace-pre-wrap break-words"
+                }`}
+              >
+                {line.message}
+              </span>
             </div>
           );
         })}
-        {cursorOn && (
-          <span className="inline-block w-2 h-4 bg-white/80 align-middle" />
+        {currentLine && (
+          <div key={currentLine.id} className="mb-2">
+            <div className="flex items-baseline gap-2">
+              {currentLine.timestamp && (
+                <span className="text-white/40 font-mono text-[10px]">
+                  [{currentLine.timestamp}]
+                </span>
+              )}
+              {currentLine.username && (
+                <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
+                  {currentLine.username}:
+                </span>
+              )}
+            </div>
+            <TypeWriter
+              text={currentLine.message}
+              className={`text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] ${
+                currentLine.id.startsWith("banner-")
+                  ? "whitespace-pre"
+                  : "whitespace-pre-wrap break-words"
+              }`}
+              onComplete={handleLineComplete}
+            />
+          </div>
         )}
+        <span
+          className={`inline-block h-4 w-1 ml-2 align-middle ${
+            cursorOn ? "bg-white/80 opacity-100" : "bg-transparent opacity-0"
+          }`}
+        />
       </div>
     </div>
   );
