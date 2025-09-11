@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Press_Start_2P } from "next/font/google";
 
 import bg from "./png/Background_main_1.jpg";
@@ -25,6 +25,12 @@ import {
 import TerminalSnippet from "@/components/TerminalSnippet";
 import AirdropModal from "@/components/AirdropModal";
 import { VideoAuctionSheet } from "@/components/VideoAuctionSheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -35,6 +41,13 @@ const press = Press_Start_2P({
 export default function LandingPage() {
   const [isAirdropOpen, setIsAirdropOpen] = useState(false);
   const [isAuctionOpen, setIsAuctionOpen] = useState(false);
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+
+  useEffect(() => {
+    if (!comingSoonOpen) return;
+    const t = setTimeout(() => setComingSoonOpen(false), 1800);
+    return () => clearTimeout(t);
+  }, [comingSoonOpen]);
   return (
     <main
       className="relative min-h-screen w-full overflow-hidden [cursor:none] select-none"
@@ -54,12 +67,12 @@ export default function LandingPage() {
       </div>
 
       {/* Terminal snippet above dialog */}
-      <div className="pointer-events-none absolute right-[90px] bottom-[300px] md:bottom-[340px] z-10 hidden md:block">
+      <div className="pointer-events-none absolute xl:right-[10px] 3xl:right-[90px] bottom-[300px] md:bottom-[340px] z-10 hidden xl:block">
         <TerminalSnippet />
       </div>
 
       {/* Dialog + Profile pic (bottom-right) */}
-      <div className="pointer-events-none absolute right-[90px] bottom-[152px] md:bottom-[184px] z-10 hidden md:block">
+      <div className="pointer-events-none absolute xl:right-[70px] 2xl:right-[180px] 3xl:right-[240px] bottom-[152px] md:bottom-[184px] z-10 hidden xl:block">
         <div className="relative">
           <Image
             src={bubble}
@@ -108,23 +121,32 @@ export default function LandingPage() {
         </div>
 
         <div className="mb-10 mt-[90px] md:mt-[102px] lg:mt-[112px] flex items-center justify-center gap-1">
-          <button
-            type="button"
-            onClick={() => setIsAuctionOpen(true)}
-            className="cursor-none"
-          >
-            <span className="sr-only">Open bid sheet</span>
-            <div className="relative h-[56px] w-[160px] md:h-[64px] md:w-[216px] lg:h-[70px] lg:w-[246px] transition hover:brightness-110">
-              <Image
-                src={pinkBtn}
-                alt="Bid for tomorrow's video"
-                fill
-                className="object-contain"
-                priority
-                draggable={false}
-              />
-            </div>
-          </button>
+          <TooltipProvider>
+            <Tooltip open={comingSoonOpen}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setComingSoonOpen(true)}
+                  className="cursor-none"
+                >
+                  <span className="sr-only">Bid coming soon</span>
+                  <div className="relative h-[56px] w-[160px] md:h-[64px] md:w-[216px] lg:h-[70px] lg:w-[246px] transition hover:brightness-110">
+                    <Image
+                      src={pinkBtn}
+                      alt="Bid for tomorrow's video"
+                      fill
+                      className="object-contain"
+                      priority
+                      draggable={false}
+                    />
+                  </div>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="cursor-none">
+                <span>This functionality is coming soon</span>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <button
             type="button"
             onClick={() => setIsAirdropOpen(true)}
@@ -154,19 +176,6 @@ export default function LandingPage() {
           />
         </div>
       </div>
-
-      <Image
-        src={coinIcon}
-        alt="Coin"
-        className="pointer-events-none absolute left-6 bottom-10 h-auto w-[48px] md:w-[64px] lg:w-[72px] animate-bob opacity-80"
-        draggable={false}
-      />
-      <Image
-        src={giftIcon}
-        alt="Gift"
-        className="pointer-events-none absolute right-6 top-20 h-auto w-[56px] md:w-[72px] lg:w-[84px] animate-bob opacity-90"
-        draggable={false}
-      />
 
       <footer className="pointer-events-auto absolute inset-x-0 bottom-10 md:bottom-14 z-10">
         <div className="mx-auto flex items-center justify-center gap-5 md:gap-7 text-white/90">

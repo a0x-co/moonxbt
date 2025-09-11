@@ -118,7 +118,7 @@ const BannerWriter = ({
   }, [progress, lines, onComplete]);
 
   return (
-    <div className="whitespace-pre font-mono text-white/80 tracking-wide text-[11px] md:text-[12px]">
+    <div className="whitespace-pre font-mono text-white/80 tracking-wide xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px]">
       {lines.map((ln, i) => {
         const p = progress[i];
         const showing = ln.slice(0, p);
@@ -228,8 +228,8 @@ export default function TerminalSnippet() {
   }, []);
 
   return (
-    <div className="w-[468px] md:w-[676px] text-white/80">
-      <div className="px-1 py-1 text-xs leading-relaxed">
+    <div className="xl:w-[460px] 2xl:w-[576px] 3xl:w-[636px] text-white/80">
+      <div className="xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px] leading-relaxed">
         {completedLines.map((line) => {
           if (!line) return null;
           return (
@@ -237,19 +237,19 @@ export default function TerminalSnippet() {
               {(line.timestamp || line.username) && (
                 <div className="flex items-baseline gap-2">
                   {line.timestamp && (
-                    <span className="text-white/40 font-mono text-[10px]">
+                    <span className="text-white/40 font-mono xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px]">
                       [{line.timestamp}]
                     </span>
                   )}
                   {line.username && (
-                    <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
+                    <span className="text-white/70 font-bold tracking-wider xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px] font-orbitron">
                       {line.username}:
                     </span>
                   )}
                 </div>
               )}
               <span
-                className={`text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] ${
+                className={`text-white/80 font-mono tracking-wide xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px] ${
                   line.id === "banner"
                     ? "whitespace-pre"
                     : "whitespace-pre-wrap break-words"
@@ -265,12 +265,12 @@ export default function TerminalSnippet() {
             {currentLine.id !== "banner" && (
               <div className="flex items-baseline gap-2">
                 {currentLine.timestamp && (
-                  <span className="text-white/40 font-mono text-[10px]">
+                  <span className="text-white/40 font-mono xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px]">
                     [{currentLine.timestamp}]
                   </span>
                 )}
                 {currentLine.username && (
-                  <span className="text-white/70 font-bold tracking-wider text-[10px] font-orbitron">
+                  <span className="text-white/70 font-bold tracking-wider xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px] font-orbitron">
                     {currentLine.username}:
                   </span>
                 )}
@@ -286,7 +286,7 @@ export default function TerminalSnippet() {
             ) : (
               <TypeWriter
                 text={currentLine.message}
-                className="text-white/80 font-mono tracking-wide text-[11px] md:text-[12px] whitespace-pre-wrap break-words"
+                className="text-white/80 font-mono tracking-wide xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px] whitespace-pre-wrap break-words"
                 onComplete={handleLineComplete}
                 intervalMs={15}
               />
