@@ -11,7 +11,7 @@
 body {
   min-height: 100vh;
   overflow-x: hidden;
-  background-color: #1752f0; /* ensure behind safe areas */
+  background-color: #000; /* ensure behind safe areas */
 }
 
 /* iOS safe-area insets for full-bleed backgrounds */
