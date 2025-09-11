@@ -30,6 +30,18 @@ const orbitron = Orbitron({
 export const metadata: Metadata = {
   title: "MoonXBT",
   description: "MoonXBT - Your Based Content Creator",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#1752F0" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+  },
+  appleWebApp: {
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export default async function RootLayout({

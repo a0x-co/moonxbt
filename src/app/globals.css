@@ -11,6 +11,16 @@
 body {
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: #1752f0; /* ensure behind safe areas */
+}
+
+/* iOS safe-area insets for full-bleed backgrounds */
+html,
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 @layer utilities {
