@@ -235,6 +235,10 @@ export default function LandingPage() {
               width={32}
               height={32}
               className="opacity-90 hover:opacity-100 transition"
+              style={{
+                filter:
+                  "invert(100%) sepia(100%) saturate(100%) hue-rotate(180deg) brightness(400%) contrast(100%)",
+              }}
               draggable={false}
             />
           </a>
