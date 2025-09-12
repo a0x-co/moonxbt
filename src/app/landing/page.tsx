@@ -179,7 +179,7 @@ export default function LandingPage() {
             <SiX
               aria-hidden
               className="text-white opacity-90 hover:opacity-100 transition"
-              size={22}
+              size={32}
             />
           </a>
           <a
@@ -192,7 +192,7 @@ export default function LandingPage() {
             <SiFarcaster
               aria-hidden
               className="text-white opacity-90 hover:opacity-100 transition"
-              size={22}
+              size={32}
             />
           </a>
           <a
@@ -202,7 +202,7 @@ export default function LandingPage() {
             aria-label="TikTok"
             className="opacity-90 hover:opacity-100 transition cursor-none"
           >
-            <SiTiktok aria-hidden className="text-white" size={22} />
+            <SiTiktok aria-hidden className="text-white" size={32} />
           </a>
           <a
             href="https://t.me/A0X_Portal"
@@ -211,7 +211,7 @@ export default function LandingPage() {
             aria-label="Telegram"
             className="opacity-90 hover:opacity-100 transition cursor-none"
           >
-            <SiTelegram aria-hidden className="text-white" size={22} />
+            <SiTelegram aria-hidden className="text-white" size={32} />
           </a>
           <a
             href="https://www.instagram.com/moonxbt_ai"
@@ -220,7 +220,7 @@ export default function LandingPage() {
             aria-label="Instagram"
             className="opacity-90 hover:opacity-100 transition cursor-none"
           >
-            <SiInstagram aria-hidden className="text-white" size={22} />
+            <SiInstagram aria-hidden className="text-white" size={32} />
           </a>
           <a
             href="https://zora.co/@moonxbt"
@@ -232,8 +232,8 @@ export default function LandingPage() {
             <Image
               src="/assets/zora.png"
               alt="Zora"
-              width={22}
-              height={22}
+              width={32}
+              height={32}
               className="opacity-90 hover:opacity-100 transition"
               draggable={false}
             />
@@ -243,13 +243,13 @@ export default function LandingPage() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Dex Screener"
-            className="cursor-none"
+            className="cursor-none mt-1 -ml-3"
           >
             <Image
               src="/assets/dexlogo.png"
               alt="Dex Screener"
-              width={22}
-              height={22}
+              width={42}
+              height={42}
               className="opacity-90 hover:opacity-100 transition"
               draggable={false}
             />
