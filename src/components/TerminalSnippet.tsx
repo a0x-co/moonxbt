@@ -228,7 +228,7 @@ export default function TerminalSnippet() {
   }, []);
 
   return (
-    <div className="xl:w-[460px] 2xl:w-[576px] 3xl:w-[636px] text-white/80">
+    <div className="2xl:w-[550px] 3xl:w-[636px] text-white/80 justify-self-center">
       <div className="xl:text-[9px] 2xl:text-[10px] 3xl:text-[12px] leading-relaxed">
         {completedLines.map((line) => {
           if (!line) return null;

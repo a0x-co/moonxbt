@@ -1,5 +1,5 @@
 // Next
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Press_Start_2P, Orbitron } from "next/font/google";
 import { headers } from "next/headers";
 
@@ -30,18 +30,19 @@ const orbitron = Orbitron({
 export const metadata: Metadata = {
   title: "MoonXBT",
   description: "MoonXBT - Your Based Content Creator",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#1752F0" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
-  ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    viewportFit: "cover",
-  },
   appleWebApp: {
     statusBarStyle: "black-translucent",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#000000" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({

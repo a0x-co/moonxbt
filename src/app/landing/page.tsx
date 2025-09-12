@@ -1,19 +1,16 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Press_Start_2P } from "next/font/google";
 
 import bg from "./png/Background_main_1.jpg";
 import logo from "./png/Logotipo_moonXBT_1@2x-8.png";
-import iso from "./png/Isotipo_moonXBT_1@2x-8.png";
-import bubble from "./png/globo_texto_1@2x-8.png";
+import iso from "./png/Logo_gatito_1.png";
+import bubble from "./png/NEW_globo_text_2@2x-8.png";
 import cursor from "./png/Cursor_1@2x-8.png";
 import pinkBtn from "./png/Boton rosa@2x-8.png";
 import yellowBtn from "./png/Boton Amarillo@2x-8.png";
-import coinIcon from "./png/coin_icon_1@2x-8.png";
-import giftIcon from "./png/gift_icon_1@2x-8.png";
-import moonPfp from "./png/moon.jpeg";
+import moonPfp from "./png/moon_crop.jpeg";
 import CustomCursor from "./CustomCursor";
 import {
   SiX,
@@ -67,29 +64,22 @@ export default function LandingPage() {
       </div>
 
       {/* Terminal snippet above dialog */}
-      <div className="pointer-events-none absolute xl:right-[10px] 3xl:right-[90px] bottom-[300px] md:bottom-[340px] z-10 hidden xl:block">
+      <div className="pointer-events-none absolute xl:right-[calc(2.5%-50px)] 3xl:right-[90px] bottom-[300px] md:bottom-[340px] z-10 hidden 2xl:block">
         <TerminalSnippet />
       </div>
 
       {/* Dialog + Profile pic (bottom-right) */}
-      <div className="pointer-events-none absolute xl:right-[70px] 2xl:right-[180px] 3xl:right-[240px] bottom-[152px] md:bottom-[184px] z-10 hidden xl:block">
+      <div className="pointer-events-none absolute bottom-[152px] md:bottom-[280px] xl:right-[70px]  2xl:bottom-[240px] 2xl:right-[180px] 3xl:right-[240px] z-10 hidden xl:block">
         <div className="relative">
           <Image
             src={bubble}
             alt="Join the airdrop"
-            className="relative z-10 transform -translate-x-4 -translate-y-8"
+            className="relative z-10 transform -translate-x-8 -translate-y-2 2xl:-translate-x-12 3xl:-translate-x-16"
             width={280}
             height={120}
             draggable={false}
           />
-          <div className="absolute inset-0 -top-6 z-20 mt-3">
-            <span
-              className={`${press.className} text-black text-[10px] md:text-xs lg:text-sm leading-tight tracking-wide`}
-            >
-              Let&apos;s create *.*
-            </span>
-          </div>
-          <div className="absolute -right-[50px] top-8 z-0 h-[116px] w-[116px] rounded-full ring-1 ring-black overflow-hidden drop-shadow-[5px_12px_4px_rgba(0,0,0,0.4)]">
+          <div className="absolute -right-[50px] top-8 z-0 h-[120px] w-[120px] 2xl:h-[140px] 2xl:w-[140px] 3xl:h-[160px] 3xl:w-[160px] rounded-full ring-1 ring-black overflow-hidden drop-shadow-[5px_12px_4px_rgba(0,0,0,0.4)]">
             <Image
               src={moonPfp}
               alt="Moon profile"
@@ -107,8 +97,8 @@ export default function LandingPage() {
             src={iso}
             alt="MoonXBT mark"
             className="neon-moon mx-auto mb-4 md:mb-6"
-            width={72}
-            height={72}
+            width={200}
+            height={200}
             draggable={false}
           />
           <Image
