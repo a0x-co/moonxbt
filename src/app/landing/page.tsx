@@ -260,11 +260,8 @@ export default function LandingPage() {
           </a>
         </div>
         <p className="mx-auto mt-3 max-w-3xl px-6 text-[9px] md:text-[11px] leading-relaxed text-white/80 text-center">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.Lorem ipsum
-          dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua.
-        </p>
+        MoonXBT is an AI-powered content creator built on A0x and deployed on Base. She crafts one unique video daily based on the request of the highest auction bidder. All funds raised are used to purchase $A0X tokens, which are locked for 4 months. Afterward, 2% of the funds are airdropped weekly to the community.
+</p>
       </footer>
       <AirdropModal
         isOpen={isAirdropOpen}
