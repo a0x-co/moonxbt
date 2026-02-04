@@ -204,15 +204,22 @@ const TerminalHero = () => {
     setIsAuctionOpen(true);
   };
 
+  // Demo: show Winner Dashboard button to everyone (set NEXT_PUBLIC_DEMO_WINNER_DASHBOARD=true)
+  const isDemoWinnerDashboard =
+    process.env.NEXT_PUBLIC_DEMO_WINNER_DASHBOARD === "true";
+
   const handleOpenWinnerDashboard = () => {
     setIsWinnerDashboardOpen(true);
   };
 
-  // Efecto para verificar si el usuario es el último ganador
+  // Efecto para verificar si el usuario es el último ganador (o siempre true en modo demo)
   useEffect(() => {
+    if (isDemoWinnerDashboard) {
+      setIsLastWinner(true);
+      return;
+    }
     const checkIfLastWinner = async () => {
       if (wallet?.address && lastAuctionWinner) {
-        let last;
         setIsLastWinner(
           wallet.address.toLowerCase() === lastAuctionWinner.toLowerCase()
         );
@@ -222,7 +229,7 @@ const TerminalHero = () => {
     };
 
     checkIfLastWinner();
-  }, [lastAuctionWinner, wallet?.address]);
+  }, [lastAuctionWinner, wallet?.address, isDemoWinnerDashboard]);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -462,7 +469,7 @@ const TerminalHero = () => {
 
             {/* Center - Bid Button and Airdrop Button */}
             <div className="order-first sm:order-none mb-4 sm:mb-0 flex flex-col sm:flex-row items-center gap-4">
-              {isLastWinner && wallet?.address && (
+              {((isLastWinner && wallet?.address) || isDemoWinnerDashboard) && (
                 <button
                   onClick={handleOpenWinnerDashboard}
                   className="group relative overflow-hidden px-8 py-3 bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-xl transform hover:scale-[1.02] transition-all duration-300"
