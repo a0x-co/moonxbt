@@ -2,7 +2,7 @@
 
 import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS } from "@/constants/contracts";
 import { useEffect, useRef } from "react";
-import { getAddress, parseEther } from "viem";
+import { getAddress, parseUnits } from "viem";
 import {
   useAccount,
   useSimulateContract,
@@ -10,13 +10,21 @@ import {
   useWriteContract,
 } from "wagmi";
 
+type UseBidOptions = {
+  tokenDecimals?: number;
+  tokenSymbol?: string;
+};
+
 export const useBid = (
   bidAmount: string,
   resourceUrl: string,
   resourceMetadata: string = "N/A",
-  callback?: (txHash: `0x${string}`) => void
+  callback?: (txHash: `0x${string}`) => void,
+  options: UseBidOptions = {}
 ) => {
   const { chainId } = useAccount();
+  const tokenDecimals = options.tokenDecimals ?? 18;
+  const tokenSymbol = options.tokenSymbol ?? "A0X";
 
   let resourceValue: string;
   try {
@@ -30,6 +38,12 @@ export const useBid = (
   }
 
   const contractAddress = getAddress(AUCTION_CONTRACT_ADDRESS);
+  let bidAmountUnits = BigInt(0);
+  try {
+    bidAmountUnits = parseUnits(bidAmount || "0", tokenDecimals);
+  } catch {
+    bidAmountUnits = BigInt(0);
+  }
 
   // Prepare the transaction simulation
   const simulate = useSimulateContract({
@@ -37,7 +51,7 @@ export const useBid = (
     chainId: chainId,
     abi: AUCTION_ABI,
     functionName: "placeBid",
-    args: [parseEther(bidAmount || "0"), resourceValue],
+    args: [bidAmountUnits, resourceValue],
     query: {
       // Enable simulation only if bidAmount is a non-empty string,
       // can be parsed to a positive number, and resourceUrl is provided.
@@ -68,7 +82,7 @@ export const useBid = (
     query: {
       enabled: !!write.data,
       meta: {
-        successMessage: `Successfully placed bid of ${bidAmount} A0X`,
+        successMessage: `Successfully placed bid of ${bidAmount} ${tokenSymbol}`,
       },
     },
   });

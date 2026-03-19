@@ -144,7 +144,8 @@ export function BidForm({
       setRawResourceMetadataInput("");
       refetchAuctionData();
       refetchBid();
-    }
+    },
+    { tokenDecimals: 6, tokenSymbol: "USDC" }
   );
   // --- FIN ÚNICA LLAMADA AL HOOK useBid ---
 
@@ -272,7 +273,7 @@ export function BidForm({
         />
         {/* Display balance */}
         <p className="text-xs text-gray-400 font-medium ml-2">
-          Balance: {balanceOfA0X} A0X
+          Balance: {balanceOfA0X} USDC
         </p>
       </div>
 

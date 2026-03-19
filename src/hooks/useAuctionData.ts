@@ -1,5 +1,5 @@
 import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS } from "@/constants/contracts";
-import { formatEther } from "viem";
+import { formatUnits } from "viem";
 import { useReadContract, useReadContracts } from "wagmi";
 import { useEffect, useState } from "react";
 
@@ -60,7 +60,7 @@ export function useAuctionData(): AuctionData {
   const currentAuctionIdData = auctionData?.[0]?.result as bigint | undefined;
   const timeRemainingData = auctionData?.[1]?.result as bigint | undefined;
   const lastAuctionWinnerData = auctionData?.[2]?.result as
-    | `0x${string}`
+    | [string, bigint, string]
     | undefined;
 
   const {
@@ -154,13 +154,12 @@ export function useAuctionData(): AuctionData {
     currentBidder: currentBidder as `0x${string}` | undefined,
     currentBidAmount: currentBidAmount,
     formattedBidAmount: currentBidAmount
-      ? `${formatEther(currentBidAmount)} A0X`
-      : "0 A0X",
+      ? `${formatUnits(currentBidAmount, 6)} USDC`
+      : "0 USDC",
     currentResourceValue,
     parsedResourceValue: parseResourceValue(currentResourceValue),
     isLoading: isLoadingAuctionContracts || isLoadingBid,
-    // lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
-    lastAuctionWinner: "0x68472E62719acb63f09AFfC4dAC2d86690B0c676", // for demo purposes
+    lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
     lastAuctionAmount: lastAuctionAmount,
     lastAuctionResourceValue: lastAuctionResourceValue,
     refetchAuctionData,

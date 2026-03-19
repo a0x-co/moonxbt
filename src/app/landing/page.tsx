@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Press_Start_2P } from "next/font/google";
 
 import bg from "./png/Background_main_1.jpg";
@@ -22,12 +22,6 @@ import {
 import TerminalSnippet from "@/components/TerminalSnippet";
 import AirdropModal from "@/components/AirdropModal";
 import { VideoAuctionSheet } from "@/components/VideoAuctionSheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -38,13 +32,6 @@ const press = Press_Start_2P({
 export default function LandingPage() {
   const [isAirdropOpen, setIsAirdropOpen] = useState(false);
   const [isAuctionOpen, setIsAuctionOpen] = useState(false);
-  const [comingSoonOpen, setComingSoonOpen] = useState(false);
-
-  useEffect(() => {
-    if (!comingSoonOpen) return;
-    const t = setTimeout(() => setComingSoonOpen(false), 1800);
-    return () => clearTimeout(t);
-  }, [comingSoonOpen]);
   return (
     <main
       className="relative min-h-screen w-full overflow-hidden [cursor:none] select-none"
@@ -111,32 +98,23 @@ export default function LandingPage() {
         </div>
 
         <div className="mb-10 mt-[90px] md:mt-[102px] lg:mt-[112px] flex items-center justify-center gap-1">
-          <TooltipProvider>
-            <Tooltip open={comingSoonOpen}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => setComingSoonOpen(true)}
-                  className="cursor-none"
-                >
-                  <span className="sr-only">Bid coming soon</span>
-                  <div className="relative h-[56px] w-[160px] md:h-[64px] md:w-[216px] lg:h-[70px] lg:w-[246px] transition hover:brightness-110">
-                    <Image
-                      src={pinkBtn}
-                      alt="Bid for tomorrow's video"
-                      fill
-                      className="object-contain"
-                      priority
-                      draggable={false}
-                    />
-                  </div>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="cursor-none">
-                <span>This functionality is coming soon</span>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <button
+            type="button"
+            onClick={() => setIsAuctionOpen(true)}
+            className="cursor-none"
+          >
+            <span className="sr-only">Open bid flow</span>
+            <div className="relative h-[56px] w-[160px] md:h-[64px] md:w-[216px] lg:h-[70px] lg:w-[246px] transition hover:brightness-110">
+              <Image
+                src={pinkBtn}
+                alt="Bid for tomorrow's video"
+                fill
+                className="object-contain"
+                priority
+                draggable={false}
+              />
+            </div>
+          </button>
           <button
             type="button"
             onClick={() => setIsAirdropOpen(true)}
