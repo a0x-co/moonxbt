@@ -63,6 +63,11 @@ export const useApprove = (
   return {
     write,
     isLoading: write.isPending || wait.isLoading,
+    isPromptingWallet: write.isPending,
+    isWaitingApprovalConfirmation: wait.isLoading,
+    isApprovalSuccess: wait.isSuccess,
+    approvalError: write.error || wait.error,
+    approvalTxHash: write.data,
     simulate,
     wait,
   };

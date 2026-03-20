@@ -1,0 +1,23 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "deployedAt": "2026-03-20T05:15:05.974Z",
+  "owner": "0x07D758E7d6aB5b8cF80f78d43e92F277Bb02e10A",
+  "tokenAuction": {
+    "address": "0xe64C74C94e09fCfd466e6E5f73cED05b541Ea761",
+    "constructorArgs": {
+      "resourceName": "QR Destination URL",
+      "defaultResourceValue": "https://qrcoin.fun"
+    }
+  },
+  "bidToken": {
+    "address": "0x97345beBF15e0578814f33F77fD0166b83E88B92",
+    "name": "MoonXBT Test Token",
+    "symbol": "MXBT",
+    "decimals": 18,
+    "initialSupply": "1000000",
+    "mintedTo": "0x07D758E7d6aB5b8cF80f78d43e92F277Bb02e10A",
+    "mintedAmount": "50000",
+    "priceUsd8": "100000000"
+  }
+}

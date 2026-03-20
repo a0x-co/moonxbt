@@ -1,9 +1,10 @@
-// Deployed contract address on Base
+// Deployed contract address on Base Sepolia (testnet)
 export const AUCTION_CONTRACT_ADDRESS =
-  "0xa02ddbFDa3FD7Ded61Ca32f17BBDf322328bA2eB" as const;
+  "0xe64C74C94e09fCfd466e6E5f73cED05b541Ea761" as const;
 
+// MockERC20 test token on Base Sepolia
 export const USDC_CONTRACT_ADDRESS =
-  "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
+  "0x97345beBF15e0578814f33F77fD0166b83E88B92" as const;
 
 // A0X token address on Base
 export const A0X_CONTRACT_ADDRESS =
@@ -13,7 +14,6 @@ export const A0X_CONTRACT_ADDRESS =
 export const AUCTION_ABI = [
   {
     inputs: [
-      { internalType: "address", name: "_biddingToken", type: "address" },
       { internalType: "string", name: "_resourceName", type: "string" },
       { internalType: "string", name: "_defaultValue", type: "string" },
     ],
@@ -43,6 +43,12 @@ export const AUCTION_ABI = [
         indexed: false,
         internalType: "address",
         name: "winner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "token",
         type: "address",
       },
       {
@@ -77,6 +83,12 @@ export const AUCTION_ABI = [
         type: "address",
       },
       {
+        indexed: true,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+      {
         indexed: false,
         internalType: "uint256",
         name: "amount",
@@ -105,6 +117,12 @@ export const AUCTION_ABI = [
         indexed: true,
         internalType: "address",
         name: "bidder",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "token",
         type: "address",
       },
       {
@@ -137,6 +155,39 @@ export const AUCTION_ABI = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newPrice",
+        type: "uint256",
+      },
+    ],
+    name: "TokenPriceUpdated",
+    type: "event",
+  },
+  {
+    inputs: [{ internalType: "address", name: "token", type: "address" }],
+    name: "addAllowedToken",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "allowedTokens",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "auctionDuration",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
@@ -151,9 +202,12 @@ export const AUCTION_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "biddingToken",
-    outputs: [{ internalType: "contract IERC20", name: "", type: "address" }],
+    inputs: [
+      { internalType: "address", name: "token", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+    ],
+    name: "calculateBidValueInUSD",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
@@ -183,6 +237,7 @@ export const AUCTION_ABI = [
     name: "getBid",
     outputs: [
       { internalType: "address", name: "", type: "address" },
+      { internalType: "address", name: "", type: "address" },
       { internalType: "uint256", name: "", type: "uint256" },
       { internalType: "string", name: "", type: "string" },
     ],
@@ -201,6 +256,7 @@ export const AUCTION_ABI = [
     name: "getLastAuctionWinner",
     outputs: [
       { internalType: "address", name: "winner", type: "address" },
+      { internalType: "address", name: "token", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
       { internalType: "string", name: "resourceValue", type: "string" },
     ],
@@ -218,6 +274,13 @@ export const AUCTION_ABI = [
     inputs: [],
     name: "lastAuctionResourceValue",
     outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "lastAuctionToken",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -244,10 +307,18 @@ export const AUCTION_ABI = [
   },
   {
     inputs: [
+      { internalType: "address", name: "token", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
       { internalType: "string", name: "resourceValue", type: "string" },
     ],
     name: "placeBid",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "token", type: "address" }],
+    name: "removeAllowedToken",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -274,17 +345,27 @@ export const AUCTION_ABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "newToken", type: "address" }],
-    name: "setBiddingToken",
+    inputs: [{ internalType: "string", name: "newValue", type: "string" }],
+    name: "setDefaultResourceValue",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [{ internalType: "string", name: "newValue", type: "string" }],
-    name: "setDefaultResourceValue",
+    inputs: [
+      { internalType: "address", name: "token", type: "address" },
+      { internalType: "uint256", name: "priceInUSD", type: "uint256" },
+    ],
+    name: "setTokenPrice",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "tokenPrices",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
     type: "function",
   },
   {

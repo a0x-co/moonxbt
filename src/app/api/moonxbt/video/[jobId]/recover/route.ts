@@ -12,7 +12,10 @@ const BACKEND_API_KEY =
   process.env.MOONXBT_BACKEND_API_KEY ||
   "";
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  _request: NextRequest,
+  { params }: { params: { jobId: string } }
+) {
   if (!BACKEND_BASE_URL) {
     return NextResponse.json(
       { error: "A0X_AGENT_API_URL is not configured" },
@@ -27,21 +30,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let payload: unknown;
   try {
-    payload = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  try {
-    const res = await fetch(`${BACKEND_BASE_URL}/moonxbt/video/generate`, {
+    const res = await fetch(`${BACKEND_BASE_URL}/moonxbt/video/${params.jobId}/recover`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         "x-api-key": BACKEND_API_KEY,
       },
-      body: JSON.stringify(payload),
       cache: "no-store",
     });
 
@@ -51,10 +45,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         backendBaseUrl: BACKEND_BASE_URL,
-        error:
-          err instanceof Error
-            ? err.message
-            : "Failed to reach MoonXBT backend",
+        error: err instanceof Error ? err.message : "Failed to reach MoonXBT backend",
       },
       { status: 502 }
     );

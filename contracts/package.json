@@ -13,7 +13,12 @@
     "test:deploy": "hardhat test test/DeployTokenAuction.ts",
     "test:ignition": "hardhat test test/IgnitionModule.ts",
     "compile": "hardhat compile",
-    "deploy:base": "ts-node scripts/deploy-token-auction.ts"
+    "deploy:base": "ts-node scripts/deploy-token-auction.ts",
+    "deploy:base-sepolia": "ts-node scripts/deploy-token-auction-sepolia.ts",
+    "setup:base-sepolia": "ts-node scripts/setup-token-auction-sepolia.ts",
+    "deploy:mock-sepolia": "ts-node scripts/deploy-mock-erc20-sepolia.ts",
+    "mint:mock-sepolia": "ts-node scripts/mint-mock-erc20-sepolia.ts",
+    "bootstrap:base-sepolia": "hardhat run scripts/bootstrap-base-sepolia.ts --network baseSepolia"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",

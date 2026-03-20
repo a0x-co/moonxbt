@@ -60,7 +60,7 @@ export function useAuctionData(): AuctionData {
   const currentAuctionIdData = auctionData?.[0]?.result as bigint | undefined;
   const timeRemainingData = auctionData?.[1]?.result as bigint | undefined;
   const lastAuctionWinnerData = auctionData?.[2]?.result as
-    | [string, bigint, string]
+    | [string, string, bigint, string]
     | undefined;
 
   const {
@@ -133,15 +133,17 @@ export function useAuctionData(): AuctionData {
     }
   };
 
-  const [currentBidder, currentBidAmount, currentResourceValue] =
-    (currentBidInfoData as [string, bigint, string] | undefined) ?? [
+  const [currentBidder, , currentBidAmount, currentResourceValue] =
+    (currentBidInfoData as [string, string, bigint, string] | undefined) ?? [
+      undefined,
       undefined,
       undefined,
       undefined,
     ];
 
-  const [lastAuctionWinner, lastAuctionAmount, lastAuctionResourceValue] =
-    (lastAuctionWinnerData as [string, bigint, string] | undefined) ?? [
+  const [lastAuctionWinner, , lastAuctionAmount, lastAuctionResourceValue] =
+    (lastAuctionWinnerData as [string, string, bigint, string] | undefined) ?? [
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -154,8 +156,8 @@ export function useAuctionData(): AuctionData {
     currentBidder: currentBidder as `0x${string}` | undefined,
     currentBidAmount: currentBidAmount,
     formattedBidAmount: currentBidAmount
-      ? `${formatUnits(currentBidAmount, 6)} USDC`
-      : "0 USDC",
+      ? `${formatUnits(currentBidAmount, 18)} MXBT`
+      : "0 MXBT",
     currentResourceValue,
     parsedResourceValue: parseResourceValue(currentResourceValue),
     isLoading: isLoadingAuctionContracts || isLoadingBid,

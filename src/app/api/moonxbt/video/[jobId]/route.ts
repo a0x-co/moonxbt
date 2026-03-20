@@ -30,14 +30,27 @@ export async function GET(
     );
   }
 
-  const res = await fetch(
-    `${BACKEND_BASE_URL}/moonxbt/video/${params.jobId}`,
-    {
-      headers: { "x-api-key": BACKEND_API_KEY },
-      cache: "no-store",
-    }
-  );
+  try {
+    const res = await fetch(
+      `${BACKEND_BASE_URL}/moonxbt/video/${params.jobId}`,
+      {
+        headers: { "x-api-key": BACKEND_API_KEY },
+        cache: "no-store",
+      }
+    );
 
-  const data = await res.json().catch(() => ({}));
-  return NextResponse.json(data, { status: res.status });
+    const data = await res.json().catch(() => ({}));
+    return NextResponse.json(data, { status: res.status });
+  } catch (err: unknown) {
+    return NextResponse.json(
+      {
+        backendBaseUrl: BACKEND_BASE_URL,
+        error:
+          err instanceof Error
+            ? err.message
+            : "Failed to reach MoonXBT backend",
+      },
+      { status: 502 }
+    );
+  }
 }

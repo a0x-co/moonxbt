@@ -12,7 +12,10 @@ const BACKEND_API_KEY =
   process.env.MOONXBT_BACKEND_API_KEY ||
   "";
 
-export async function POST(request: NextRequest) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { jobId: string } }
+) {
   if (!BACKEND_BASE_URL) {
     return NextResponse.json(
       { error: "A0X_AGENT_API_URL is not configured" },
@@ -27,26 +30,34 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let payload: unknown;
   try {
-    payload = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
+    const backendRes = await fetch(
+      `${BACKEND_BASE_URL}/moonxbt/video/${params.jobId}/stream`,
+      {
+        headers: { "x-api-key": BACKEND_API_KEY },
+        cache: "no-store",
+      }
+    );
 
-  try {
-    const res = await fetch(`${BACKEND_BASE_URL}/moonxbt/video/generate`, {
-      method: "POST",
+    if (!backendRes.ok || !backendRes.body) {
+      const text = await backendRes.text().catch(() => "");
+      return NextResponse.json(
+        {
+          error:
+            text ||
+            `Failed to fetch preview stream from backend (${backendRes.status})`,
+        },
+        { status: backendRes.status || 502 }
+      );
+    }
+
+    return new NextResponse(backendRes.body, {
+      status: 200,
       headers: {
-        "Content-Type": "application/json",
-        "x-api-key": BACKEND_API_KEY,
+        "Content-Type": backendRes.headers.get("content-type") || "video/mp4",
+        "Cache-Control": "no-store",
       },
-      body: JSON.stringify(payload),
-      cache: "no-store",
     });
-
-    const data = await res.json().catch(() => ({}));
-    return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
     return NextResponse.json(
       {

@@ -11,11 +11,17 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [], // Use environment variable for private key
       // Note: Base requires careful gas estimation. We'll handle this in the deployment script.
     },
+    baseSepolia: {
+      url: process.env.BASE_SEPOLIA_RPC_URL || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
     apiKey: {
       // Base Mainnet
       base: process.env.BASESCAN_API_KEY || "",
+      // Base Sepolia
+      baseSepolia: process.env.BASESCAN_API_KEY || "",
     },
     customChains: [
       {
@@ -24,6 +30,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.basescan.org/api",
           browserURL: "https://basescan.org",
+        },
+      },
+      {
+        network: "baseSepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org",
         },
       },
     ],

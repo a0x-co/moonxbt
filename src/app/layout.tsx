@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { config } from "@/config/wagmiConfig";
 import Web3ModalProvider from "@/context";
 import { cookieToInitialState } from "wagmi";
+import { Toaster } from "sonner";
 
 // App
 import "./globals.css";
@@ -62,6 +63,7 @@ export default async function RootLayout({
       >
         <Web3ModalProvider initialState={initialState} session={session}>
           {children}
+          <Toaster position="top-right" richColors closeButton expand visibleToasts={5} />
         </Web3ModalProvider>
       </body>
     </html>

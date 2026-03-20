@@ -1,6 +1,6 @@
 // ... (imports remain the same)
 
-import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS } from "@/constants/contracts";
+import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/constants/contracts";
 import { useEffect, useRef } from "react";
 import { getAddress, parseUnits } from "viem";
 import {
@@ -13,6 +13,7 @@ import {
 type UseBidOptions = {
   tokenDecimals?: number;
   tokenSymbol?: string;
+  simulateEnabled?: boolean;
 };
 
 export const useBid = (
@@ -25,6 +26,7 @@ export const useBid = (
   const { chainId } = useAccount();
   const tokenDecimals = options.tokenDecimals ?? 18;
   const tokenSymbol = options.tokenSymbol ?? "A0X";
+  const simulateEnabled = options.simulateEnabled ?? true;
 
   let resourceValue: string;
   try {
@@ -38,6 +40,7 @@ export const useBid = (
   }
 
   const contractAddress = getAddress(AUCTION_CONTRACT_ADDRESS);
+  const bidTokenAddress = getAddress(USDC_CONTRACT_ADDRESS);
   let bidAmountUnits = BigInt(0);
   try {
     bidAmountUnits = parseUnits(bidAmount || "0", tokenDecimals);
@@ -51,12 +54,13 @@ export const useBid = (
     chainId: chainId,
     abi: AUCTION_ABI,
     functionName: "placeBid",
-    args: [bidAmountUnits, resourceValue],
+    args: [bidTokenAddress, bidAmountUnits, resourceValue],
     query: {
       // Enable simulation only if bidAmount is a non-empty string,
       // can be parsed to a positive number, and resourceUrl is provided.
       // Added a check for bidAmount being a valid number before parsing
       enabled:
+        simulateEnabled &&
         !!bidAmount &&
         bidAmount !== "0" &&
         !isNaN(parseFloat(bidAmount)) &&
@@ -106,8 +110,9 @@ export const useBid = (
 
   // --- Derived States and Error Handling ---
 
-  // Combined error (could be from simulate, write, or wait)
-  const error = simulate.error || write.error || wait.error;
+  // User-facing bid errors should come from write/wait, not preflight simulation.
+  const txError = write.error || wait.error;
+  const error = txError || simulate.error;
   const isError = !!error;
 
   // Combined loading states
@@ -172,8 +177,8 @@ export const useBid = (
     isWriting: write.isPending, // Alias for clarity
     isWaitingForConfirmation: wait.isLoading,
     isBidSuccess: wait.isSuccess, // Alias for clarity
-    isBidError: isError, // Overall error flag (sim, write, or wait)
-    bidError: error, // Overall error object
+    isBidError: !!txError,
+    bidError: txError,
     bidStatus: status, // Granular status
 
     // Keep original combined states for convenience
