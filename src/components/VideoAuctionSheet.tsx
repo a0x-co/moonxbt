@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaPlayCircle, FaSignOutAlt, FaSpinner, FaTrophy, FaWallet } from "react-icons/fa";
 import { erc20Abi, formatUnits, maxUint256, parseUnits } from "viem";
-import { baseSepolia } from "viem/chains";
 import { useDisconnect, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { toast } from "sonner";
 
@@ -24,6 +23,7 @@ import {
   AUCTION_CONTRACT_ADDRESS,
   USDC_CONTRACT_ADDRESS,
 } from "@/constants/contracts";
+import { targetChainId, targetChainName } from "@/config/chainConfig";
 import { useApprove } from "@/hooks/useApprove";
 import { useAuctionData } from "@/hooks/useAuctionData";
 import { useBid } from "@/hooks/useBid";
@@ -140,6 +140,9 @@ function getReadableBidError(error: unknown): string {
   if (message.includes("Bid value too low")) {
     return "Your bid must be higher than the current highest bid.";
   }
+  if (message.includes("Bid increase too low")) {
+    return "Your bid must be at least 10% higher than the current highest bid.";
+  }
   if (message.includes("Auction has ended")) {
     return "This auction already ended. Wait for the next auction round.";
   }
@@ -166,7 +169,7 @@ function getReadableApprovalError(error: unknown): string {
     return "Insufficient gas funds in wallet for approval transaction.";
   }
   if (message.includes("wrong network") || message.includes("chain") || message.includes("base sepolia")) {
-    return "Wrong network detected. Switch wallet to Base Sepolia and retry.";
+    return `Wrong network detected. Switch wallet to ${targetChainName} and retry.`;
   }
   if (message.includes("cannot read from private field")) {
     return "Wallet provider conflict detected (usually extension injection). Try incognito with one wallet extension enabled.";
@@ -254,27 +257,27 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     refetch: refetchAllowance,
     isLoading: isLoadingAllowance,
   } = useReadContract({
-    address: USDC_CONTRACT_ADDRESS,
+    address: USDC_CONTRACT_ADDRESS as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
     args: [
       (wallet?.address || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-      AUCTION_CONTRACT_ADDRESS,
+      AUCTION_CONTRACT_ADDRESS as `0x${string}`,
     ],
-    chainId: baseSepolia.id,
+    chainId: targetChainId,
     query: {
       enabled: Boolean(wallet?.address),
     },
   });
 
   const { data: balanceUSDC, refetch: refetchBalanceUSDC } = useReadContract({
-    address: USDC_CONTRACT_ADDRESS,
+    address: USDC_CONTRACT_ADDRESS as `0x${string}`,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [
       (wallet?.address || "0x0000000000000000000000000000000000000000") as `0x${string}`,
     ],
-    chainId: baseSepolia.id,
+    chainId: targetChainId,
     query: {
       enabled: Boolean(wallet?.address),
     },
@@ -294,9 +297,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     isApprovalSuccess,
     approvalError,
   } = useApprove(
-    USDC_CONTRACT_ADDRESS,
+    USDC_CONTRACT_ADDRESS as `0x${string}`,
     "MXBT",
-    AUCTION_CONTRACT_ADDRESS,
+    AUCTION_CONTRACT_ADDRESS as `0x${string}`,
     needsApproval,
     bidAmountUnits,
     async () => {
@@ -596,20 +599,20 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     }
     try {
       setIsApproving(true);
-      await wallet.switchChain(baseSepolia.id);
+      await wallet.switchChain(targetChainId);
       writeApprove.writeContract({
-        address: USDC_CONTRACT_ADDRESS,
+        address: USDC_CONTRACT_ADDRESS as `0x${string}`,
         abi: erc20Abi,
         functionName: "approve",
-        args: [AUCTION_CONTRACT_ADDRESS, bidAmountUnits],
-        chainId: baseSepolia.id,
+        args: [AUCTION_CONTRACT_ADDRESS as `0x${string}`, bidAmountUnits],
+        chainId: targetChainId,
       });
     } catch (error) {
       console.error("[MoonXBT][Approve] Failed before tx submission", {
         error: stringifyErrorForDebug(error),
         wallet: wallet?.address,
         chainId: wallet?.chainId,
-        expectedChainId: baseSepolia.id,
+        expectedChainId: targetChainId,
         bidAmountInput: rawBidAmountInput,
         bidAmountUnits: bidAmountUnits.toString(),
       });
@@ -670,7 +673,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     if (!wallet?.address || !canSubmitBid) return;
     const isOpen = await ensureAuctionOpen();
     if (!isOpen) return;
-    await wallet.switchChain(baseSepolia.id);
+    await wallet.switchChain(targetChainId);
     placeBid();
   };
 
@@ -690,13 +693,13 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     if (!wallet?.address || !hasAllowance) return;
 
     try {
-      await wallet.switchChain(baseSepolia.id);
+      await wallet.switchChain(targetChainId);
       revokeWrite.writeContract({
-        address: USDC_CONTRACT_ADDRESS,
+        address: USDC_CONTRACT_ADDRESS as `0x${string}`,
         abi: erc20Abi,
         functionName: "approve",
-        args: [AUCTION_CONTRACT_ADDRESS, BigInt(0)],
-        chainId: baseSepolia.id,
+        args: [AUCTION_CONTRACT_ADDRESS as `0x${string}`, BigInt(0)],
+        chainId: targetChainId,
       });
     } catch {
       toast.error("Revoke failed. Please retry and confirm in wallet.");
@@ -734,7 +737,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       error: stringifyErrorForDebug(approvalError),
       wallet: wallet?.address,
       chainId: wallet?.chainId,
-      expectedChainId: baseSepolia.id,
+      expectedChainId: targetChainId,
       bidAmountInput: rawBidAmountInput,
       bidAmountUnits: bidAmountUnits.toString(),
       allowance: allowance.toString(),
@@ -757,7 +760,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       error: stringifyErrorForDebug(simulationError),
       wallet: wallet?.address,
       chainId: wallet?.chainId,
-      expectedChainId: baseSepolia.id,
+      expectedChainId: targetChainId,
       bidAmountInput: rawBidAmountInput,
       bidAmountUnits: bidAmountUnits.toString(),
       resourceUrl: rawResourceUrlInput,
@@ -785,7 +788,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       error: stringifyErrorForDebug(bidError),
       wallet: wallet?.address,
       chainId: wallet?.chainId,
-      expectedChainId: baseSepolia.id,
+      expectedChainId: targetChainId,
       bidAmountInput: rawBidAmountInput,
       bidAmountUnits: bidAmountUnits.toString(),
       allowance: allowance.toString(),
@@ -809,7 +812,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     console.info("[MoonXBT][Debug] wallet+auction snapshot", {
       wallet: wallet.address,
       chainId: wallet.chainId,
-      expectedChainId: baseSepolia.id,
+      expectedChainId: targetChainId,
       currentAuctionId: currentAuctionId?.toString(),
       formattedTimeLeft,
       isAuctionExpired,

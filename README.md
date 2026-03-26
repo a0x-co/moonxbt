@@ -37,6 +37,23 @@ This project requires certain environment variables to be set up. Create a `.env
 NEXT_PUBLIC_MOONXBT_API_KEY=your_api_key_here
 NEXT_PUBLIC_MOONXBT_API_SECRET=your_api_secret_here
 NEXT_PUBLIC_MOONXBT_API_PASSPHRASE=your_passphrase_here
+
+# Chain selection
+# testnet (default) -> Base Sepolia
+# mainnet -> Base
+NEXT_PUBLIC_MOONXBT_CHAIN=testnet
+
+# Optional explicit override (takes priority when set)
+# NEXT_PUBLIC_MOONXBT_CHAIN_ID=8453
+
+# RPC URLs
+NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL=your_base_sepolia_rpc
+NEXT_PUBLIC_BASE_MAINNET_RPC_URL=your_base_mainnet_rpc
+
+# Contracts (set these for mainnet deployment)
+NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS=0x...
+NEXT_PUBLIC_BID_TOKEN_CONTRACT_ADDRESS=0x...
+NEXT_PUBLIC_A0X_CONTRACT_ADDRESS=0x...
 ```
 
 Never commit these values to the repository. The `.env.local` file is automatically ignored by Git.

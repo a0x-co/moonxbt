@@ -1,14 +1,22 @@
-// Deployed contract address on Base Sepolia (testnet)
-export const AUCTION_CONTRACT_ADDRESS =
-  "0xe64C74C94e09fCfd466e6E5f73cED05b541Ea761" as const;
+function requireEnvAddress(name: string): `0x${string}` {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
+  return value as `0x${string}`;
+}
 
-// MockERC20 test token on Base Sepolia
-export const USDC_CONTRACT_ADDRESS =
-  "0x97345beBF15e0578814f33F77fD0166b83E88B92" as const;
+export const AUCTION_CONTRACT_ADDRESS: `0x${string}` = requireEnvAddress(
+  "NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS"
+);
 
-// A0X token address on Base
-export const A0X_CONTRACT_ADDRESS =
-  "0x820C5F0fB255a1D18fd0eBB0F1CCefbC4D546dA7" as const;
+export const USDC_CONTRACT_ADDRESS: `0x${string}` = requireEnvAddress(
+  "NEXT_PUBLIC_BID_TOKEN_CONTRACT_ADDRESS"
+);
+
+export const A0X_CONTRACT_ADDRESS: `0x${string}` = requireEnvAddress(
+  "NEXT_PUBLIC_A0X_CONTRACT_ADDRESS"
+);
 
 // Contract ABI
 export const AUCTION_ABI = [

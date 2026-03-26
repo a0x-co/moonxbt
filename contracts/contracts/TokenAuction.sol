@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TokenAuction is Ownable {
+    uint256 public constant BPS_DENOMINATOR = 10000;
     mapping(address => bool) public allowedTokens;
     // Precio de referencia en USD (con 8 decimales)
     mapping(address => uint256) public tokenPrices;
@@ -31,6 +32,7 @@ contract TokenAuction is Ownable {
     }
     uint256 public currentAuctionId;
     uint256 public auctionDuration = 1 days;
+    uint256 public minBidIncreaseBps = 1000; // 10%
     
     // Track the start time of each auction
     mapping(uint256 => uint256) public auctionStartTimes;
@@ -45,6 +47,7 @@ contract TokenAuction is Ownable {
     event BidRefunded(uint256 indexed auctionId, address indexed bidder, address indexed token, uint256 amount);
     event AuctionEnded(uint256 indexed auctionId, address winner, address token, uint256 amount, string resourceValue);
     event TokenPriceUpdated(address indexed token, uint256 newPrice);
+    event MinBidIncreaseUpdated(uint256 newBps);
     
     constructor(string memory _resourceName, string memory _defaultValue) Ownable(msg.sender) {
         require(bytes(_resourceName).length > 0, "Resource name cannot be empty");
@@ -75,8 +78,14 @@ contract TokenAuction is Ownable {
                 _bids[currentAuctionId].amount
             );
         }
-        
-        require(currentBidValue > previousBidValue, "Bid value too low");
+
+        if (previousBidValue > 0) {
+            // Require next bid to be at least minBidIncreaseBps above current highest bid.
+            uint256 minRequiredBidValue =
+                (previousBidValue * (BPS_DENOMINATOR + minBidIncreaseBps) + BPS_DENOMINATOR - 1) /
+                BPS_DENOMINATOR;
+            require(currentBidValue >= minRequiredBidValue, "Bid increase too low");
+        }
         
         address previousBidder = _bids[currentAuctionId].bidder;
         address previousToken = _bids[currentAuctionId].token;
@@ -179,5 +188,11 @@ contract TokenAuction is Ownable {
     
     function setDefaultResourceValue(string calldata newValue) external onlyOwner {
         defaultResourceValue = newValue;
+    }
+
+    function setMinBidIncreaseBps(uint256 newBps) external onlyOwner {
+        require(newBps <= BPS_DENOMINATOR, "Increase too high");
+        minBidIncreaseBps = newBps;
+        emit MinBidIncreaseUpdated(newBps);
     }
 }
