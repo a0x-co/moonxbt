@@ -153,8 +153,41 @@ function getReadableBidError(error: unknown): string {
   return "Transaction failed. Please retry after confirming wallet network and approval.";
 }
 
+function getReadableApprovalError(error: unknown): string {
+  const message = ((error as Error | undefined)?.message || "").toLowerCase();
+  const code =
+    (error as { code?: unknown } | undefined)?.code ||
+    (error as { cause?: { code?: unknown } } | undefined)?.cause?.code;
+
+  if (code === 4001 || message.includes("user rejected") || message.includes("rejected")) {
+    return "Approval was rejected in wallet. Please retry and confirm the transaction.";
+  }
+  if (message.includes("insufficient funds")) {
+    return "Insufficient gas funds in wallet for approval transaction.";
+  }
+  if (message.includes("wrong network") || message.includes("chain") || message.includes("base sepolia")) {
+    return "Wrong network detected. Switch wallet to Base Sepolia and retry.";
+  }
+  if (message.includes("cannot read from private field")) {
+    return "Wallet provider conflict detected (usually extension injection). Try incognito with one wallet extension enabled.";
+  }
+
+  return "Approval failed. Please retry and confirm in wallet.";
+}
+
+function stringifyErrorForDebug(error: unknown): string {
+  if (!error) return "unknown error";
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 const LOCAL_DEBUG_STEP2_BYPASS =
   process.env.NEXT_PUBLIC_LOCAL_DEBUG_STEP2_BYPASS === "true";
+const AUCTION_DEBUG = process.env.NEXT_PUBLIC_MOONXBT_DEBUG === "true";
 
 export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const { ready, authenticated, login } = usePrivy();
@@ -312,6 +345,10 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   );
 
   const readableBidError = useMemo(() => getReadableBidError(bidError), [bidError]);
+  const readableApprovalError = useMemo(
+    () => getReadableApprovalError(approvalError),
+    [approvalError]
+  );
   const readableSimulationError = useMemo(
     () => getReadableBidError(simulationError),
     [simulationError]
@@ -567,6 +604,16 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         args: [AUCTION_CONTRACT_ADDRESS, bidAmountUnits],
         chainId: baseSepolia.id,
       });
+    } catch (error) {
+      console.error("[MoonXBT][Approve] Failed before tx submission", {
+        error: stringifyErrorForDebug(error),
+        wallet: wallet?.address,
+        chainId: wallet?.chainId,
+        expectedChainId: baseSepolia.id,
+        bidAmountInput: rawBidAmountInput,
+        bidAmountUnits: bidAmountUnits.toString(),
+      });
+      toast.error(getReadableApprovalError(error));
     } finally {
       setIsApproving(false);
     }
@@ -679,6 +726,113 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
 
     toast.success("Bid transaction confirmed. Checking if you are the current top bid...");
   }, [isBidSuccess]);
+
+  useEffect(() => {
+    if (!approvalError) return;
+
+    console.error("[MoonXBT][Approve] Approval error", {
+      error: stringifyErrorForDebug(approvalError),
+      wallet: wallet?.address,
+      chainId: wallet?.chainId,
+      expectedChainId: baseSepolia.id,
+      bidAmountInput: rawBidAmountInput,
+      bidAmountUnits: bidAmountUnits.toString(),
+      allowance: allowance.toString(),
+      needsApproval,
+    });
+  }, [
+    approvalError,
+    wallet?.address,
+    wallet?.chainId,
+    rawBidAmountInput,
+    bidAmountUnits,
+    allowance,
+    needsApproval,
+  ]);
+
+  useEffect(() => {
+    if (!isSimulationError || !simulationError) return;
+
+    console.error("[MoonXBT][Bid] Simulation error", {
+      error: stringifyErrorForDebug(simulationError),
+      wallet: wallet?.address,
+      chainId: wallet?.chainId,
+      expectedChainId: baseSepolia.id,
+      bidAmountInput: rawBidAmountInput,
+      bidAmountUnits: bidAmountUnits.toString(),
+      resourceUrl: rawResourceUrlInput,
+      resourceMetadataLength: rawResourceMetadataInput.length,
+      isApproved,
+      allowance: allowance.toString(),
+    });
+  }, [
+    isSimulationError,
+    simulationError,
+    wallet?.address,
+    wallet?.chainId,
+    rawBidAmountInput,
+    bidAmountUnits,
+    rawResourceUrlInput,
+    rawResourceMetadataInput,
+    isApproved,
+    allowance,
+  ]);
+
+  useEffect(() => {
+    if (!isBidError || !bidError) return;
+
+    console.error("[MoonXBT][Bid] Transaction error", {
+      error: stringifyErrorForDebug(bidError),
+      wallet: wallet?.address,
+      chainId: wallet?.chainId,
+      expectedChainId: baseSepolia.id,
+      bidAmountInput: rawBidAmountInput,
+      bidAmountUnits: bidAmountUnits.toString(),
+      allowance: allowance.toString(),
+      currentAuctionId: currentAuctionId?.toString(),
+    });
+  }, [
+    isBidError,
+    bidError,
+    wallet?.address,
+    wallet?.chainId,
+    rawBidAmountInput,
+    bidAmountUnits,
+    allowance,
+    currentAuctionId,
+  ]);
+
+  useEffect(() => {
+    if (!AUCTION_DEBUG) return;
+    if (!wallet?.address) return;
+
+    console.info("[MoonXBT][Debug] wallet+auction snapshot", {
+      wallet: wallet.address,
+      chainId: wallet.chainId,
+      expectedChainId: baseSepolia.id,
+      currentAuctionId: currentAuctionId?.toString(),
+      formattedTimeLeft,
+      isAuctionExpired,
+      bidAmountInput: rawBidAmountInput,
+      bidAmountUnits: bidAmountUnits.toString(),
+      allowance: allowance.toString(),
+      needsApproval,
+      isApproved,
+      canSubmitBid,
+    });
+  }, [
+    wallet?.address,
+    wallet?.chainId,
+    currentAuctionId,
+    formattedTimeLeft,
+    isAuctionExpired,
+    rawBidAmountInput,
+    bidAmountUnits,
+    allowance,
+    needsApproval,
+    isApproved,
+    canSubmitBid,
+  ]);
 
   useEffect(() => {
     if (!isCurrentUserLeadingBidder || !currentAuctionId) return;
@@ -1101,7 +1255,10 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               {urlError && <p className="pt-2 text-xs text-red-500">{urlError}</p>}
               {approvalError && !isApprovalSuccess && (
                 <div className="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  Approval failed. Please retry and confirm in wallet.
+                  <p>{readableApprovalError}</p>
+                  <p className="mt-1 break-all text-[10px] text-red-600/90">
+                    Debug: {stringifyErrorForDebug(approvalError).slice(0, 220)}
+                  </p>
                 </div>
               )}
               {isBidError && (
