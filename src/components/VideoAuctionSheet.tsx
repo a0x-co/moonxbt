@@ -175,6 +175,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const [rawResourceMetadataInput, setRawResourceMetadataInput] = useState("");
   const [urlError, setUrlError] = useState("");
   const [isApproving, setIsApproving] = useState(false);
+  const [isEnsuringAuctionOpen, setIsEnsuringAuctionOpen] = useState(false);
 
   const [tone, setTone] = useState<Tone>("balanced");
   const [hypePercent, setHypePercent] = useState(60);
@@ -203,6 +204,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     refetchAuctionData,
     refetchBid,
   } = useAuctionData();
+
+  const isAuctionExpired =
+    !isLoadingAuctionData && formattedTimeLeft === "00:00:00";
 
   const bidAmountUnits = useMemo(() => {
     try {
@@ -347,7 +351,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const isBidFlowPending = isPromptingWallet || isWaitingForConfirmation;
   const isRevokePending = revokeWrite.isPending || revokeWait.isLoading;
 
-  const isAnyPending = isApprovalFlowPending || isBidFlowPending || isRevokePending;
+  const isAnyPending =
+    isApprovalFlowPending ||
+    isBidFlowPending ||
+    isRevokePending ||
+    isEnsuringAuctionOpen;
 
   const normalizedWalletAddress = wallet?.address?.toLowerCase();
   const auctionEntryId = useMemo(() => {
@@ -386,6 +394,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
 
   const step1ButtonLabel = !wallet?.address
     ? "Connect Wallet"
+    : isEnsuringAuctionOpen
+    ? "Finalizing Auction..."
     : needsApproval
     ? isApprovalFlowPending
       ? needsIncreaseApproval
@@ -562,6 +572,45 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     }
   };
 
+  const ensureAuctionOpen = async () => {
+    setIsEnsuringAuctionOpen(true);
+    try {
+      const res = await fetch("/api/moonxbt/auction/ensure-open", {
+        method: "POST",
+        cache: "no-store",
+      });
+      const data = await readJsonSafe(res);
+
+      if (!res.ok || !data?.success) {
+        const message =
+          (typeof data?.error === "string" && data.error) ||
+          `Failed to finalize auction (${res.status})`;
+        throw new Error(message);
+      }
+
+      if (data.finalized) {
+        toast.success("Auction finalized. New round is open.");
+        await Promise.all([
+          refetchAuctionData(),
+          refetchBid(),
+          refetchAllowance(),
+          refetchBalanceUSDC(),
+        ]);
+      }
+
+      return true;
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to ensure auction is open"
+      );
+      return false;
+    } finally {
+      setIsEnsuringAuctionOpen(false);
+    }
+  };
+
   const handleBidSubmit = async () => {
     try {
       new URL(rawResourceUrlInput);
@@ -572,6 +621,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     }
 
     if (!wallet?.address || !canSubmitBid) return;
+    const isOpen = await ensureAuctionOpen();
+    if (!isOpen) return;
     await wallet.switchChain(baseSepolia.id);
     placeBid();
   };
@@ -884,6 +935,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                   <span className="mt-1 text-[11px] font-medium uppercase tracking-widest text-[#3a3a55]">
                     Time left
                   </span>
+                  {isAuctionExpired && (
+                    <span className="mt-2 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-rose-700">
+                      Auction ended - needs finalize
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-col items-center rounded-lg bg-white/65 px-3 py-2 lg:items-start">
                   <span className="font-sora text-2xl font-bold tracking-tight text-[#1c1c2e]">

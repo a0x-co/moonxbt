@@ -50,6 +50,9 @@ export function BidForm({
     useState<string>("");
 
   const [urlError, setUrlError] = useState<string>("");
+  const [ensureOpenError, setEnsureOpenError] = useState<string>("");
+  const [isEnsuringAuctionOpen, setIsEnsuringAuctionOpen] =
+    useState<boolean>(false);
 
   // Esquema de validación para la URL
   const urlSchema = z.string().url("Por favor ingresa una URL válida");
@@ -149,7 +152,40 @@ export function BidForm({
   );
   // --- FIN ÚNICA LLAMADA AL HOOK useBid ---
 
-  const handleBidSubmit = () => {
+  const ensureAuctionOpen = async () => {
+    setIsEnsuringAuctionOpen(true);
+    setEnsureOpenError("");
+    try {
+      const res = await fetch("/api/moonxbt/auction/ensure-open", {
+        method: "POST",
+        cache: "no-store",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        const message =
+          (typeof data?.error === "string" && data.error) ||
+          `Failed to finalize auction (${res.status})`;
+        throw new Error(message);
+      }
+
+      if (data.finalized) {
+        await Promise.all([refetchAuctionData(), refetchBid()]);
+      }
+
+      return true;
+    } catch (error) {
+      setEnsureOpenError(
+        error instanceof Error
+          ? error.message
+          : "Failed to ensure auction is open"
+      );
+      return false;
+    } finally {
+      setIsEnsuringAuctionOpen(false);
+    }
+  };
+
+  const handleBidSubmit = async () => {
     // Basic client-side validation on raw inputs before triggering
     const bidAmountFloat = parseFloat(rawBidAmountInput);
     if (
@@ -178,6 +214,9 @@ export function BidForm({
       return;
     }
 
+    const isOpen = await ensureAuctionOpen();
+    if (!isOpen) return;
+
     // If simulation passed, trigger the write
     placeBid(); // Call the placeBid function returned by the useBid hook
   };
@@ -204,7 +243,8 @@ export function BidForm({
     isWaitingApproval || // Parent's state for waiting approval tx receipt
     isWaitingBid || // Parent's state for waiting bid tx receipt
     isPromptingWallet || // Hook state for bid wallet prompt
-    isWaitingForConfirmation; // Hook state for waiting bid tx receipt
+    isWaitingForConfirmation || // Hook state for waiting bid tx receipt
+    isEnsuringAuctionOpen;
 
   // Inputs and percentage buttons should be disabled ONLY when a transaction is in progress
   const areInputsDisabled = isTransactionInProgress;
@@ -343,6 +383,11 @@ export function BidForm({
       {errorMessage && (
         <p className="text-xs text-center text-red-400">
           Error: {errorMessage}
+        </p>
+      )}
+      {ensureOpenError && (
+        <p className="text-xs text-center text-red-400">
+          Error: {ensureOpenError}
         </p>
       )}
 
