@@ -1,6 +1,6 @@
 import { http } from "viem";
+import { base, baseSepolia } from "wagmi/chains";
 import { createConfig } from "@privy-io/wagmi";
-import { targetChain, targetRpcUrl } from "@/config/chainConfig";
 
 // if (!process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
 //   throw new Error("Missing NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID");
@@ -14,8 +14,15 @@ export const metadata = {
 };
 
 export const config = createConfig({
-  chains: [targetChain],
+  chains: [baseSepolia, base],
   transports: {
-    [targetChain.id]: http(targetRpcUrl),
+    [baseSepolia.id]: http(
+      process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL ||
+        process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL
+    ),
+    [base.id]: http(
+      process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL ||
+        process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL
+    ),
   },
 });

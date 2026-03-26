@@ -1,5 +1,14 @@
-function requireEnvAddress(name: string): `0x${string}` {
-  const value = process.env[name]?.trim();
+const CLIENT_ENV = {
+  NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS:
+    process.env.NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS,
+  NEXT_PUBLIC_BID_TOKEN_CONTRACT_ADDRESS:
+    process.env.NEXT_PUBLIC_BID_TOKEN_CONTRACT_ADDRESS,
+  NEXT_PUBLIC_A0X_CONTRACT_ADDRESS:
+    process.env.NEXT_PUBLIC_A0X_CONTRACT_ADDRESS,
+} as const;
+
+function requireEnvAddress(name: keyof typeof CLIENT_ENV): `0x${string}` {
+  const value = CLIENT_ENV[name]?.trim();
   if (!value) {
     throw new Error(`${name} is required`);
   }

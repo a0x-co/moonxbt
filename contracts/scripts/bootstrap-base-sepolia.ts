@@ -189,7 +189,7 @@ async function main() {
       `MOCK_TOKEN_DECIMALS=${tokenDecimals}`,
       `TOKEN_PRICE_USD_8=${tokenPriceUsd8.toString()}`,
       `NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS=${auctionAddress}`,
-      `NEXT_PUBLIC_BID_TOKEN_ADDRESS=${mockTokenAddress}`,
+      `NEXT_PUBLIC_BID_TOKEN_CONTRACT_ADDRESS=${mockTokenAddress}`,
     ].join("\n");
 
     const generatedEnvFile = `${deploymentsDir}/base-sepolia.generated.env`;
@@ -217,7 +217,7 @@ async function main() {
 
   console.log("Bootstrap completed successfully.");
   console.log(`Summary: ${deploymentFile}`);
-  console.log("Next: point frontend to NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS and NEXT_PUBLIC_BID_TOKEN_ADDRESS from generated env.");
+  console.log("Next: point frontend to NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS and NEXT_PUBLIC_BID_TOKEN_CONTRACT_ADDRESS from generated env.");
 }
 
 main().catch((error) => {

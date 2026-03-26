@@ -1,7 +1,14 @@
 import { base, baseSepolia } from "wagmi/chains";
 
-function requireEnv(name: string): string {
-  const value = process.env[name]?.trim();
+const CLIENT_ENV = {
+  NEXT_PUBLIC_MOONXBT_CHAIN: process.env.NEXT_PUBLIC_MOONXBT_CHAIN,
+  NEXT_PUBLIC_MOONXBT_CHAIN_ID: process.env.NEXT_PUBLIC_MOONXBT_CHAIN_ID,
+  NEXT_PUBLIC_BASE_MAINNET_RPC_URL: process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL,
+  NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL,
+} as const;
+
+function requireEnv(name: keyof typeof CLIENT_ENV): string {
+  const value = CLIENT_ENV[name]?.trim();
   if (!value) {
     throw new Error(`${name} is required`);
   }
@@ -10,7 +17,7 @@ function requireEnv(name: string): string {
 
 const envChain = requireEnv("NEXT_PUBLIC_MOONXBT_CHAIN").toLowerCase();
 
-const envChainId = Number(process.env.NEXT_PUBLIC_MOONXBT_CHAIN_ID || "");
+const envChainId = Number(CLIENT_ENV.NEXT_PUBLIC_MOONXBT_CHAIN_ID || "");
 
 function resolveTargetChain() {
   if (envChainId === base.id || envChain === "mainnet") {
