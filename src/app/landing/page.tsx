@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Press_Start_2P } from "next/font/google";
+import { formatUnits } from "viem";
 
 import bg from "./png/Background_main_1.jpg";
 import logo from "./png/Logotipo_moonXBT_1@2x-8.png";
@@ -20,8 +21,8 @@ import {
   SiInstagram,
 } from "react-icons/si";
 import TerminalSnippet from "@/components/TerminalSnippet";
-import AirdropModal from "@/components/AirdropModal";
 import { VideoAuctionSheet } from "@/components/VideoAuctionSheet";
+import { useAuctionData } from "@/hooks/useAuctionData";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -30,14 +31,173 @@ const press = Press_Start_2P({
 });
 
 export default function LandingPage() {
-  const [isAirdropOpen, setIsAirdropOpen] = useState(false);
+  const [isWinnersOpen, setIsWinnersOpen] = useState(false);
   const [isAuctionOpen, setIsAuctionOpen] = useState(false);
+  const [isTweetsLoading, setIsTweetsLoading] = useState(true);
+  const [isTweetsFailed, setIsTweetsFailed] = useState(false);
+  const tweetsContainerRef = useRef<HTMLDivElement | null>(null);
+  const { lastAuctionWinner, lastAuctionAmount, lastAuctionResourceValue } =
+    useAuctionData();
+
+  const parseAuctionResource = (
+    resource: string | undefined,
+  ): string | null => {
+    if (!resource) return null;
+
+    try {
+      const parsed = JSON.parse(resource) as { url?: string };
+      return parsed.url ?? resource;
+    } catch {
+      return resource;
+    }
+  };
+
+  const winnerEntries =
+    lastAuctionWinner && lastAuctionAmount
+      ? [
+          {
+            id: "latest",
+            winner: `${lastAuctionWinner.slice(0, 6)}...${lastAuctionWinner.slice(-4)}`,
+            amount: `${formatUnits(lastAuctionAmount, 18)} MXBT`,
+            resource: parseAuctionResource(lastAuctionResourceValue),
+          },
+        ]
+      : [];
+
+  const ensureTwitterScript = async () => {
+    if (typeof window === "undefined") {
+      throw new Error("Window is not available");
+    }
+
+    const twttrWindow = window as Window & {
+      twttr?: {
+        widgets?: {
+          createTimeline?: (
+            dataSource: { sourceType: "profile"; screenName: string },
+            target: HTMLElement,
+            options?: {
+              theme?: "dark" | "light";
+              chrome?: string;
+              height?: number;
+            },
+          ) => Promise<HTMLElement>;
+        };
+      };
+    };
+
+    if (twttrWindow.twttr?.widgets?.createTimeline) {
+      return twttrWindow.twttr;
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      const existingScript = document.querySelector(
+        'script[src="https://platform.twitter.com/widgets.js"]',
+      ) as HTMLScriptElement | null;
+
+      if (existingScript) {
+        existingScript.addEventListener("load", () => resolve(), {
+          once: true,
+        });
+        existingScript.addEventListener(
+          "error",
+          () => reject(new Error("Failed to load Twitter script")),
+          { once: true },
+        );
+
+        const maybeReady = () => {
+          if (twttrWindow.twttr?.widgets?.createTimeline) {
+            resolve();
+          }
+        };
+        window.setTimeout(maybeReady, 50);
+        window.setTimeout(maybeReady, 250);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://platform.twitter.com/widgets.js";
+      script.async = true;
+      script.charset = "utf-8";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load Twitter script"));
+      document.body.appendChild(script);
+    });
+
+    if (!twttrWindow.twttr?.widgets?.createTimeline) {
+      throw new Error("Twitter widgets API unavailable");
+    }
+
+    return twttrWindow.twttr;
+  };
+
+  useEffect(() => {
+    if (isWinnersOpen && winnerEntries.length === 0) {
+      setIsTweetsLoading(true);
+      setIsTweetsFailed(false);
+      let cancelled = false;
+
+      const mountTimeline = async () => {
+        try {
+          const target = tweetsContainerRef.current;
+          if (!target) {
+            throw new Error("Timeline container not found");
+          }
+
+          target.innerHTML = "";
+
+          const twttr = await ensureTwitterScript();
+          if (cancelled) return;
+
+          await Promise.race([
+            twttr.widgets!.createTimeline!(
+              {
+                sourceType: "profile",
+                screenName: "moonXBT_ai",
+              },
+              target,
+              {
+                theme: "dark",
+                chrome: "noheader nofooter noborders",
+                height: 420,
+              },
+            ),
+            new Promise((_, reject) => {
+              window.setTimeout(
+                () => reject(new Error("Timeline load timeout")),
+                7000,
+              );
+            }),
+          ]);
+
+          if (cancelled) return;
+          setIsTweetsLoading(false);
+          setIsTweetsFailed(false);
+        } catch {
+          if (cancelled) return;
+          setIsTweetsLoading(false);
+          setIsTweetsFailed(true);
+        }
+      };
+
+      mountTimeline();
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setIsTweetsLoading(true);
+    setIsTweetsFailed(false);
+  }, [isWinnersOpen, winnerEntries.length]);
+
   return (
     <main
-      className="relative min-h-screen w-full overflow-hidden [cursor:none] select-none"
+      className={`relative min-h-screen w-full overflow-hidden select-none ${
+        isWinnersOpen ? "cursor-auto" : "[cursor:none]"
+      }`}
       suppressHydrationWarning
     >
-      <CustomCursor />
+      {!isWinnersOpen && <CustomCursor />}
 
       <div className="absolute inset-0 -z-10">
         <Image
@@ -117,18 +277,18 @@ export default function LandingPage() {
           </button>
           <button
             type="button"
-            onClick={() => setIsAirdropOpen(true)}
+            onClick={() => setIsWinnersOpen(true)}
             className="cursor-none"
           >
-            <span className="sr-only">Open airdrop</span>
+            <span className="sr-only">See previous winners</span>
             <div className="relative h-[56px] w-[160px] md:h-[64px] md:w-[216px] lg:h-[70px] lg:w-[246px] transition hover:brightness-110">
               <Image
                 src={yellowBtn}
-                alt="Open airdrop"
+                alt="See previous winners"
                 fill
                 className="object-contain"
                 draggable={false}
-              />
+              />              
             </div>
           </button>
         </div>
@@ -201,26 +361,6 @@ export default function LandingPage() {
             <SiInstagram aria-hidden className="text-white" size={32} />
           </a>
           <a
-            href="https://zora.co/@moonxbt"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Zora"
-            className="cursor-none"
-          >
-            <Image
-              src="/assets/zora.png"
-              alt="Zora"
-              width={32}
-              height={32}
-              className="opacity-90 hover:opacity-100 transition"
-              style={{
-                filter:
-                  "invert(100%) sepia(100%) saturate(100%) hue-rotate(180deg) brightness(400%) contrast(100%)",
-              }}
-              draggable={false}
-            />
-          </a>
-          <a
             href="https://dexscreener.com/base/0xa1a65c284a2e01f0d9c9683edeab30d0835d1362"
             target="_blank"
             rel="noopener noreferrer"
@@ -238,13 +378,131 @@ export default function LandingPage() {
           </a>
         </div>
         <p className="mx-auto mt-3 max-w-3xl px-6 text-[9px] md:text-[11px] leading-relaxed text-white/80 text-center">
-        MoonXBT is an AI-powered content creator built on A0x and deployed on Base. She crafts one unique video daily based on the request of the highest auction bidder. All funds raised are used to purchase $A0X tokens, which are locked for 4 months. Afterward, 2% of the funds are airdropped weekly to the community.
-</p>
+          MoonXBT is an AI-powered content creator built on A0x and deployed on
+          Base. She crafts one unique video daily based on the request of the
+          highest auction bidder. All funds raised are used to purchase $A0X
+          tokens, which are locked for 4 months. Afterward, 2% of the funds are
+          airdropped weekly to the community.
+        </p>
       </footer>
-      <AirdropModal
-        isOpen={isAirdropOpen}
-        onClose={() => setIsAirdropOpen(false)}
-      />
+      {isWinnersOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 cursor-auto">
+          <div className="relative w-full max-w-2xl border border-white/25 bg-[#000] rounded-xl p-5 md:p-7 text-white shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
+            <button
+              type="button"
+              onClick={() => setIsWinnersOpen(false)}
+              className="absolute right-3 top-3 h-10 w-10 rounded-full border border-white/40 bg-white/10 text-2xl leading-none hover:bg-white/20 cursor-pointer"
+              aria-label="Close previous winners"
+            >
+              ×
+            </button>
+
+            <h2 className={`${press.className} text-sm md:text-base uppercase`}>
+              Previous Winners
+            </h2>
+            <p className="mt-2 text-xs md:text-sm text-white/80">
+              Check who won recent auctions and what they promoted.
+            </p>
+
+            {winnerEntries.length > 0 ? (
+              <div className="mt-5 space-y-3">
+                {winnerEntries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span
+                        className={`${press.className} text-[10px] uppercase text-white/80`}
+                      >
+                        Latest Winner
+                      </span>
+                      <span className="text-xs md:text-sm font-semibold text-[#ffd34d]">
+                        {entry.amount}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm md:text-base break-all">
+                      {entry.winner}
+                    </p>
+                    {entry.resource && (
+                      <a
+                        href={entry.resource}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-block text-xs md:text-sm text-white underline underline-offset-2 hover:text-[#ffd34d]"
+                      >
+                        View promoted link
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 space-y-3">
+                <div className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4 mb-8">
+                  <p
+                    className={`${press.className} text-[10px] uppercase text-white/80`}
+                  >
+                    No winners yet
+                  </p>
+                  <p className="mt-2 text-sm text-white/90">
+                    We are still collecting the first completed auction results.
+                    Follow MoonXBT on X while the first winner comes in.
+                  </p>
+                </div>
+                <p
+                  className={`${press.className} text-[10px] uppercase text-white/80 px-1`}
+                >
+                  my previows tweets
+                </p>
+                <div
+                  className="relative overflow-hidden rounded-lg border border-white/25 bg-[#0d121d] min-h-[420px]"
+                >
+                  <div ref={tweetsContainerRef} className="absolute inset-0 z-0" />
+
+                  {isTweetsLoading && (
+                    <div className="absolute inset-0 z-10 bg-[#0d121d] p-4">
+                      <div className="h-full w-full rounded-md border border-white/10 bg-[#111827] p-4 animate-pulse">
+                        <div className="h-4 w-40 rounded bg-white/15" />
+                        <div className="mt-4 h-3 w-full rounded bg-white/10" />
+                        <div className="mt-2 h-3 w-[88%] rounded bg-white/10" />
+                        <div className="mt-6 h-[290px] w-full rounded bg-white/10" />
+                      </div>
+                      <p className="mt-3 text-xs text-white/70 text-center">
+                        Loading tweets...
+                      </p>
+                    </div>
+                  )}
+
+                  {isTweetsFailed && !isTweetsLoading && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0d121d] p-6 text-center">
+                      <p className="text-sm text-white/85">
+                        Couldn&apos;t load the embedded timeline on this browser.
+                      </p>
+                      <a
+                        href="https://x.com/moonXBT_ai"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex justify-center rounded-lg border border-white/25 bg-[#133db2]/75 px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f3293] cursor-pointer"
+                      >
+                        Open Timeline on X
+                      </a>
+                    </div>
+                  )}
+                </div>
+                <a
+                  href="https://x.com/moonXBT_ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex justify-center rounded-lg border border-white/25 bg-[#133db2]/75 px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f3293] cursor-pointer"
+                >
+                  Open Profile on X
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <VideoAuctionSheet
         isOpen={isAuctionOpen}
         onClose={() => setIsAuctionOpen(false)}
