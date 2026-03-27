@@ -1,6 +1,8 @@
 import * as React from "react";
 
-type DivProps = React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode };
+type DivProps = React.HTMLAttributes<HTMLDivElement> & {
+  children?: React.ReactNode;
+};
 
 type TriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   asChild?: boolean;

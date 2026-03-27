@@ -1,4 +1,5 @@
 import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS } from "@/constants/contracts";
+import { targetChainId } from "@/config/chainConfig";
 import { formatUnits } from "viem";
 import { useReadContract, useReadContracts } from "wagmi";
 import { useEffect, useState } from "react";
@@ -38,6 +39,7 @@ export function useAuctionData(): AuctionData {
     error: auctionContractsError,
     refetch: refetchAuctionData,
   } = useReadContracts({
+    chainId: targetChainId,
     contracts: [
       {
         address: AUCTION_CONTRACT_ADDRESS,
@@ -55,6 +57,10 @@ export function useAuctionData(): AuctionData {
         functionName: "getLastAuctionWinner",
       },
     ],
+    query: {
+      refetchInterval: 5_000,
+      refetchOnWindowFocus: true,
+    },
   });
 
   const currentAuctionIdData = auctionData?.[0]?.result as bigint | undefined;
@@ -69,12 +75,15 @@ export function useAuctionData(): AuctionData {
     error: bidError,
     refetch: refetchBid,
   } = useReadContract({
+    chainId: targetChainId,
     address: AUCTION_CONTRACT_ADDRESS,
     abi: AUCTION_ABI,
     functionName: "getBid",
     args: currentAuctionIdData ? [currentAuctionIdData] : undefined,
     query: {
       enabled: currentAuctionIdData !== undefined,
+      refetchInterval: 5_000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -149,11 +158,43 @@ export function useAuctionData(): AuctionData {
       undefined,
     ];
 
+  const normalizeAddress = (value: string | undefined): `0x${string}` | undefined => {
+    if (!value) return undefined;
+    if (value.toLowerCase() === "0x0000000000000000000000000000000000000000") {
+      return undefined;
+    }
+    return value as `0x${string}`;
+  };
+
+  const normalizedCurrentBidder = normalizeAddress(currentBidder);
+  const normalizedLastAuctionWinner = normalizeAddress(lastAuctionWinner);
+
+  useEffect(() => {
+    if (auctionContractsError) {
+      console.error("Auction contract read error", {
+        chainId: targetChainId,
+        contract: AUCTION_CONTRACT_ADDRESS,
+        error: auctionContractsError,
+      });
+    }
+  }, [auctionContractsError]);
+
+  useEffect(() => {
+    if (bidError) {
+      console.error("Auction bid read error", {
+        chainId: targetChainId,
+        contract: AUCTION_CONTRACT_ADDRESS,
+        auctionId: currentAuctionIdData?.toString(),
+        error: bidError,
+      });
+    }
+  }, [bidError, currentAuctionIdData]);
+
   return {
     currentAuctionId: currentAuctionIdData,
     timeRemaining: localTimeRemaining,
     formattedTimeLeft,
-    currentBidder: currentBidder as `0x${string}` | undefined,
+    currentBidder: normalizedCurrentBidder,
     currentBidAmount: currentBidAmount,
     formattedBidAmount: currentBidAmount
       ? `${formatUnits(currentBidAmount, 18)} MXBT`
@@ -161,7 +202,7 @@ export function useAuctionData(): AuctionData {
     currentResourceValue,
     parsedResourceValue: parseResourceValue(currentResourceValue),
     isLoading: isLoadingAuctionContracts || isLoadingBid,
-    lastAuctionWinner: lastAuctionWinner as `0x${string}` | undefined,
+    lastAuctionWinner: normalizedLastAuctionWinner,
     lastAuctionAmount: lastAuctionAmount,
     lastAuctionResourceValue: lastAuctionResourceValue,
     refetchAuctionData,

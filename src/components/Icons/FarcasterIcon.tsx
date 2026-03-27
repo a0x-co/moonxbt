@@ -13,7 +13,12 @@ export default function FarcasterIcon(props: FarcasterIconProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M12 12v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M12 12v5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }

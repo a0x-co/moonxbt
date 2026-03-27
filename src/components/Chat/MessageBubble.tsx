@@ -12,7 +12,9 @@ export function MessageBubble({ role, children }: MessageBubbleProps) {
     <div
       className={cn(
         "rounded-2xl px-4 py-3",
-        role === "user" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-900"
+        role === "user"
+          ? "bg-indigo-600 text-white"
+          : "bg-slate-100 text-slate-900",
       )}
     >
       {children}

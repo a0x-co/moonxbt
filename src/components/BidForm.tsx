@@ -148,7 +148,7 @@ export function BidForm({
       refetchAuctionData();
       refetchBid();
     },
-    { tokenDecimals: 6, tokenSymbol: "USDC" }
+    { tokenDecimals: 6, tokenSymbol: "USDC" },
   );
   // --- FIN ÚNICA LLAMADA AL HOOK useBid ---
 
@@ -177,7 +177,7 @@ export function BidForm({
       setEnsureOpenError(
         error instanceof Error
           ? error.message
-          : "Failed to ensure auction is open"
+          : "Failed to ensure auction is open",
       );
       return false;
     } finally {
@@ -206,7 +206,7 @@ export function BidForm({
     if (simulate.isError || !simulate.data) {
       console.error(
         "Cannot place bid: Simulation failed or not ready.",
-        simulate.error
+        simulate.error,
       );
       // The UI messages below will show the simulation error if needed.
       // If you want to allow writing anyway, remove this return and the condition below in placeBid.
@@ -269,28 +269,28 @@ export function BidForm({
   const buttonText = isWaitingApproval
     ? "Approving..."
     : isApproving
-    ? "Check Wallet to Approve..."
-    : isWaitingBid
-    ? "Placing Bid..." // waiting for tx receipt (parent state)
-    : isWaitingForConfirmation // waiting for tx receipt (hook state) - maybe use only one source? Assuming hook state is more reliable after write is triggered
-    ? "Placing Bid..."
-    : isWritingBid // Wallet modal is open/pending (parent state)
-    ? "Check Wallet to Place Bid..."
-    : isPromptingWallet // Wallet modal is open/pending (hook state) - same note as above
-    ? "Check Wallet to Place Bid..."
-    : isSimulating // Use the specific simulating state from the hook
-    ? "Calculating Gas..."
-    : !isApproved
-    ? "Approve A0X Token"
-    : "Place Bid";
+      ? "Check Wallet to Approve..."
+      : isWaitingBid
+        ? "Placing Bid..." // waiting for tx receipt (parent state)
+        : isWaitingForConfirmation // waiting for tx receipt (hook state) - maybe use only one source? Assuming hook state is more reliable after write is triggered
+          ? "Placing Bid..."
+          : isWritingBid // Wallet modal is open/pending (parent state)
+            ? "Check Wallet to Place Bid..."
+            : isPromptingWallet // Wallet modal is open/pending (hook state) - same note as above
+              ? "Check Wallet to Place Bid..."
+              : isSimulating // Use the specific simulating state from the hook
+                ? "Calculating Gas..."
+                : !isApproved
+                  ? "Approve A0X Token"
+                  : "Place Bid";
 
   // Helper to determine which error message to show
   const errorMessage = isBidError // Overall error from the hook (write or wait)
     ? (bidError as Error)?.message
     : isSimulationError // Simulation specific error
-    ? (simulationError as Error)?.message
-    : // Add other potential input validation errors here if not handled by disabled state
-      null;
+      ? (simulationError as Error)?.message
+      : // Add other potential input validation errors here if not handled by disabled state
+        null;
 
   return (
     <div className="space-y-4">

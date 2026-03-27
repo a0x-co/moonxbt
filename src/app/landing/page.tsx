@@ -79,6 +79,8 @@ export default function LandingPage() {
               theme?: "dark" | "light";
               chrome?: string;
               height?: number;
+              dnt?: boolean;
+              tweetLimit?: number;
             },
           ) => Promise<HTMLElement>;
         };
@@ -159,6 +161,8 @@ export default function LandingPage() {
                 theme: "dark",
                 chrome: "noheader nofooter noborders",
                 height: 420,
+                dnt: true,
+                tweetLimit: 3,
               },
             ),
             new Promise((_, reject) => {
@@ -288,7 +292,7 @@ export default function LandingPage() {
                 fill
                 className="object-contain"
                 draggable={false}
-              />              
+              />
             </div>
           </button>
         </div>
@@ -455,10 +459,11 @@ export default function LandingPage() {
                 >
                   my previows tweets
                 </p>
-                <div
-                  className="relative overflow-hidden rounded-lg border border-white/25 bg-[#0d121d] min-h-[420px]"
-                >
-                  <div ref={tweetsContainerRef} className="absolute inset-0 z-0" />
+                <div className="relative overflow-hidden rounded-lg border border-white/25 bg-[#0d121d] min-h-[420px]">
+                  <div
+                    ref={tweetsContainerRef}
+                    className="absolute inset-0 z-0"
+                  />
 
                   {isTweetsLoading && (
                     <div className="absolute inset-0 z-10 bg-[#0d121d] p-4">
@@ -477,7 +482,8 @@ export default function LandingPage() {
                   {isTweetsFailed && !isTweetsLoading && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0d121d] p-6 text-center">
                       <p className="text-sm text-white/85">
-                        Couldn&apos;t load the embedded timeline on this browser.
+                        Couldn&apos;t load the embedded timeline on this
+                        browser.
                       </p>
                       <a
                         href="https://x.com/moonXBT_ai"

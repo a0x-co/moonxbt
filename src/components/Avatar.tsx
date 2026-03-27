@@ -9,7 +9,11 @@ type JesseXBTAvatarProps = {
   priority?: boolean;
 };
 
-export function JesseXBTAvatar({ size = 32, className, fallbackUrl }: JesseXBTAvatarProps) {
+export function JesseXBTAvatar({
+  size = 32,
+  className,
+  fallbackUrl,
+}: JesseXBTAvatarProps) {
   return (
     <img
       src={fallbackUrl || "/assets/moonxbt/logo.png"}

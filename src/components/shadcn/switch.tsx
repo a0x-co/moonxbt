@@ -1,6 +1,9 @@
 import * as React from "react";
 
-type SwitchProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
+type SwitchProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "onChange"
+> & {
   onCheckedChange?: (checked: boolean) => void;
 };
 
