@@ -22,8 +22,10 @@ import {
 } from "react-icons/si";
 import TerminalSnippet from "@/components/TerminalSnippet";
 import { VideoAuctionSheet } from "@/components/VideoAuctionSheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BID_TOKEN_DECIMALS, BID_TOKEN_SYMBOL } from "@/constants/contracts";
 import { useAuctionData } from "@/hooks/useAuctionData";
+import axios from "axios";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -36,8 +38,9 @@ export default function LandingPage() {
   const [isAuctionOpen, setIsAuctionOpen] = useState(false);
   const [isTweetsLoading, setIsTweetsLoading] = useState(true);
   const [isTweetsFailed, setIsTweetsFailed] = useState(false);
+  const [winnersModalTab, setWinnersModalTab] = useState<"winners" | "tweets">("tweets");
   const tweetsContainerRef = useRef<HTMLDivElement | null>(null);
-  const { lastAuctionWinner, lastAuctionAmount, lastAuctionResourceValue } =
+  const { lastAuctionWinner, lastAuctionAmount, lastAuctionResourceValue, currentAuctionId } =
     useAuctionData();
 
   const parseAuctionResource = (
@@ -53,17 +56,35 @@ export default function LandingPage() {
     }
   };
 
-  const winnerEntries =
-    lastAuctionWinner && lastAuctionAmount
-      ? [
-          {
-            id: "latest",
-            winner: `${lastAuctionWinner.slice(0, 6)}...${lastAuctionWinner.slice(-4)}`,
-            amount: `${formatUnits(lastAuctionAmount, BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`,
-            resource: parseAuctionResource(lastAuctionResourceValue),
-          },
-        ]
-      : [];
+  // Estado para detalles extendidos del ganador
+  const [winnerDetails, setWinnerDetails] = useState<any | null>(null);
+  const [loadingWinnerDetails, setLoadingWinnerDetails] = useState(false);
+  const [winnerError, setWinnerError] = useState<string | null>(null);
+
+  // El entryId es auction-{auctionId}-{address}
+  // El último auction finalizado es currentAuctionId - 1
+  const lastAuctionId = (typeof currentAuctionId === 'bigint' ? Number(currentAuctionId) : currentAuctionId) ? Number(currentAuctionId) - 1 : null;
+  const winnerEntryId = lastAuctionId !== null && lastAuctionWinner && lastAuctionWinner !== "0x0000000000000000000000000000000000000000"
+    ? `auction-${lastAuctionId}-${lastAuctionWinner.toLowerCase()}`
+    : null;
+
+  useEffect(() => {
+    if (!winnerEntryId) {
+      setWinnerDetails(null);
+      return;
+    }
+    setLoadingWinnerDetails(true);
+    setWinnerError(null);
+    axios.get(`/api/moonxbt/auction/entry/${winnerEntryId}`)
+      .then(res => {
+        setWinnerDetails(res.data || null);
+        setLoadingWinnerDetails(false);
+      })
+      .catch(err => {
+        setWinnerError("No se pudo cargar el detalle del ganador");
+        setLoadingWinnerDetails(false);
+      });
+  }, [winnerEntryId]);
 
   const ensureTwitterScript = async () => {
     if (typeof window === "undefined") {
@@ -134,7 +155,13 @@ export default function LandingPage() {
   };
 
   useEffect(() => {
-    if (isWinnersOpen && winnerEntries.length === 0) {
+    if (isWinnersOpen) {
+      setWinnersModalTab(winnerEntryId ? "winners" : "tweets");
+    }
+  }, [isWinnersOpen, winnerEntryId]);
+
+  useEffect(() => {
+    if (isWinnersOpen && winnersModalTab === "tweets") {
       setIsTweetsLoading(true);
       setIsTweetsFailed(false);
       let cancelled = false;
@@ -193,7 +220,7 @@ export default function LandingPage() {
 
     setIsTweetsLoading(true);
     setIsTweetsFailed(false);
-  }, [isWinnersOpen, winnerEntries.length]);
+  }, [isWinnersOpen, winnersModalTab]);
 
   return (
     <main
@@ -409,57 +436,93 @@ export default function LandingPage() {
               Check who won recent auctions and what they promoted.
             </p>
 
-            {winnerEntries.length > 0 ? (
-              <div className="mt-5 space-y-3">
-                {winnerEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span
-                        className={`${press.className} text-[10px] uppercase text-white/80`}
-                      >
-                        Latest Winner
-                      </span>
-                      <span className="text-xs md:text-sm font-semibold text-[#ffd34d]">
-                        {entry.amount}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm md:text-base break-all">
-                      {entry.winner}
-                    </p>
-                    {entry.resource && (
-                      <a
-                        href={entry.resource}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 inline-block text-xs md:text-sm text-white underline underline-offset-2 hover:text-[#ffd34d]"
-                      >
-                        View promoted link
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-6 space-y-3">
-                <div className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4 mb-8">
-                  <p
-                    className={`${press.className} text-[10px] uppercase text-white/80`}
-                  >
-                    No winners yet
-                  </p>
-                  <p className="mt-2 text-sm text-white/90">
-                    We are still collecting the first completed auction results.
-                    Follow MoonXBT on X while the first winner comes in.
-                  </p>
-                </div>
-                <p
-                  className={`${press.className} text-[10px] uppercase text-white/80 px-1`}
+            <Tabs
+              value={winnersModalTab}
+              onValueChange={(value) =>
+                setWinnersModalTab(value as "winners" | "tweets")
+              }
+              className="mt-6"
+            >
+              <TabsList className="mx-auto mb-5 flex h-auto w-full max-w-xl gap-2 rounded-xl border border-white/25 bg-white/10 p-1">
+                <TabsTrigger
+                  value="winners"
+                  className="flex-1 rounded-lg px-4 py-2 text-xs font-semibold text-white/80 data-[state=active]:bg-[#133db2]/80 data-[state=active]:text-white"
                 >
-                  my previows tweets
-                </p>
+                  Past Winners
+                </TabsTrigger>
+                <TabsTrigger
+                  value="tweets"
+                  className="flex-1 rounded-lg px-4 py-2 text-xs font-semibold text-white/80 data-[state=active]:bg-[#133db2]/80 data-[state=active]:text-white"
+                >
+                  My Previous Tweets
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="winners" className="m-0">
+                {loadingWinnerDetails ? (
+                  <div className="text-center text-white/80">Loading winner details...</div>
+                ) : winnerDetails ? (
+                  <div className="space-y-3">
+                    <div className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className={`${press.className} text-[10px] uppercase text-white/80`}>
+                          Latest Winner
+                        </span>
+                        <span className="text-xs md:text-sm font-semibold text-[#ffd34d]">
+                          {winnerDetails.maxBid ? `${formatUnits(BigInt(winnerDetails.maxBid), BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}` : ""}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm md:text-base break-all">
+                        {winnerDetails.userAddress ? `${winnerDetails.userAddress.slice(0, 6)}...${winnerDetails.userAddress.slice(-4)}` : ""}
+                      </p>
+                      {winnerDetails.latestVideo?.videoUrl && (
+                        <video
+                          src={winnerDetails.latestVideo.videoUrl}
+                          controls
+                          className="mt-3 w-full rounded-lg border border-white/10"
+                          style={{ maxHeight: 320 }}
+                        />
+                      )}
+                      {winnerDetails.latestVideo?.createdAt && (
+                        <div className="mt-2 text-xs text-white/60">
+                          Date: {new Date(winnerDetails.latestVideo.createdAt).toLocaleString()}
+                        </div>
+                      )}
+                      {winnerDetails.latestScript?.scriptUsed && (
+                        <div className="mt-3 p-2 bg-black/30 rounded text-xs md:text-sm text-white/90 border border-white/10">
+                          <span className="font-bold text-white/70">Script:</span>
+                          <br />
+                          {winnerDetails.latestScript.scriptUsed}
+                        </div>
+                      )}
+                      {winnerDetails.project?.url && (
+                        <a
+                          href={winnerDetails.project.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-block text-xs md:text-sm text-white underline underline-offset-2 hover:text-[#ffd34d]"
+                        >
+                          View promoted link
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ) : winnerError ? (
+                  <div className="text-center text-red-400">{winnerError}</div>
+                ) : (
+                  <div className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4">
+                    <p className={`${press.className} text-[10px] uppercase text-white/80`}>
+                      No winners yet
+                    </p>
+                    <p className="mt-2 text-sm text-white/90">
+                      We are still collecting the first completed auction results.
+                      Follow MoonXBT on X while the first winner comes in.
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="tweets" className="m-0 space-y-3">
                 <div className="relative overflow-hidden rounded-lg border border-white/25 bg-[#0d121d] min-h-[420px]">
                   <div
                     ref={tweetsContainerRef}
@@ -505,8 +568,8 @@ export default function LandingPage() {
                 >
                   Open Profile on X
                 </a>
-              </div>
-            )}
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       )}
