@@ -22,6 +22,7 @@ import {
 } from "react-icons/si";
 import TerminalSnippet from "@/components/TerminalSnippet";
 import { VideoAuctionSheet } from "@/components/VideoAuctionSheet";
+import { BID_TOKEN_DECIMALS, BID_TOKEN_SYMBOL } from "@/constants/contracts";
 import { useAuctionData } from "@/hooks/useAuctionData";
 
 const press = Press_Start_2P({
@@ -58,7 +59,7 @@ export default function LandingPage() {
           {
             id: "latest",
             winner: `${lastAuctionWinner.slice(0, 6)}...${lastAuctionWinner.slice(-4)}`,
-            amount: `${formatUnits(lastAuctionAmount, 18)} MXBT`,
+            amount: `${formatUnits(lastAuctionAmount, BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`,
             resource: parseAuctionResource(lastAuctionResourceValue),
           },
         ]

@@ -5,6 +5,9 @@ const CLIENT_ENV = {
     process.env.NEXT_PUBLIC_BID_TOKEN_CONTRACT_ADDRESS,
   NEXT_PUBLIC_A0X_CONTRACT_ADDRESS:
     process.env.NEXT_PUBLIC_A0X_CONTRACT_ADDRESS,
+  NEXT_PUBLIC_BID_TOKEN_SYMBOL: process.env.NEXT_PUBLIC_BID_TOKEN_SYMBOL,
+  NEXT_PUBLIC_BID_TOKEN_DECIMALS: process.env.NEXT_PUBLIC_BID_TOKEN_DECIMALS,
+  NEXT_PUBLIC_MOONXBT_CHAIN: process.env.NEXT_PUBLIC_MOONXBT_CHAIN,
 } as const;
 
 function requireEnvAddress(name: keyof typeof CLIENT_ENV): `0x${string}` {
@@ -26,6 +29,20 @@ export const USDC_CONTRACT_ADDRESS: `0x${string}` = requireEnvAddress(
 export const A0X_CONTRACT_ADDRESS: `0x${string}` = requireEnvAddress(
   "NEXT_PUBLIC_A0X_CONTRACT_ADDRESS"
 );
+
+const envChain = CLIENT_ENV.NEXT_PUBLIC_MOONXBT_CHAIN?.trim().toLowerCase();
+const defaultBidTokenSymbol = envChain === "mainnet" ? "USDC" : "MXBT";
+const defaultBidTokenDecimals = envChain === "mainnet" ? 6 : 18;
+
+export const BID_TOKEN_SYMBOL =
+  CLIENT_ENV.NEXT_PUBLIC_BID_TOKEN_SYMBOL?.trim() || defaultBidTokenSymbol;
+
+export const BID_TOKEN_DECIMALS = (() => {
+  const raw = CLIENT_ENV.NEXT_PUBLIC_BID_TOKEN_DECIMALS?.trim();
+  if (!raw) return defaultBidTokenDecimals;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : defaultBidTokenDecimals;
+})();
 
 // Contract ABI
 export const AUCTION_ABI = [

@@ -41,6 +41,8 @@ import {
 } from "@/components/ui/tooltip";
 import {
   AUCTION_CONTRACT_ADDRESS,
+  BID_TOKEN_DECIMALS,
+  BID_TOKEN_SYMBOL,
   USDC_CONTRACT_ADDRESS,
 } from "@/constants/contracts";
 import { targetChainId, targetChainName } from "@/config/chainConfig";
@@ -155,7 +157,7 @@ function getReadableBidError(error: unknown): string {
     message.includes("0xfb8f41b2") ||
     message.includes("ERC20InsufficientAllowance")
   ) {
-    return "Insufficient allowance for MXBT. Click Approve MXBT again and wait for confirmation.";
+    return `Insufficient allowance for ${BID_TOKEN_SYMBOL}. Click Approve ${BID_TOKEN_SYMBOL} again and wait for confirmation.`;
   }
   if (message.includes("Bid value too low")) {
     return "Your bid must be higher than the current highest bid.";
@@ -276,7 +278,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
 
   const bidAmountUnits = useMemo(() => {
     try {
-      return parseUnits(rawBidAmountInput || "0", 18);
+      return parseUnits(rawBidAmountInput || "0", BID_TOKEN_DECIMALS);
     } catch {
       return BigInt(0);
     }
@@ -332,7 +334,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     approvalError,
   } = useApprove(
     USDC_CONTRACT_ADDRESS as `0x${string}`,
-    "MXBT",
+    BID_TOKEN_SYMBOL,
     AUCTION_CONTRACT_ADDRESS as `0x${string}`,
     needsApproval,
     bidAmountUnits,
@@ -378,7 +380,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         refetchBid(),
       ]);
     },
-    { tokenDecimals: 18, tokenSymbol: "MXBT", simulateEnabled: isApproved },
+    {
+      tokenDecimals: BID_TOKEN_DECIMALS,
+      tokenSymbol: BID_TOKEN_SYMBOL,
+      simulateEnabled: isApproved,
+    },
   );
 
   const readableBidError = useMemo(
@@ -413,11 +419,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   }, [currentAuctionId]);
 
   const formattedBalanceUSDC = Number(
-    formatUnits(balanceUSDC || BigInt(0), 18),
+    formatUnits(balanceUSDC || BigInt(0), BID_TOKEN_DECIMALS),
   ).toFixed(2);
   const formattedAllowance = useMemo(() => {
     if (allowance === maxUint256) return "Unlimited";
-    return Number(formatUnits(allowance, 18)).toFixed(2);
+    return Number(formatUnits(allowance, BID_TOKEN_DECIMALS)).toFixed(2);
   }, [allowance]);
 
   const isBidInputValid =
@@ -500,10 +506,10 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         ? isApprovalFlowPending
           ? needsIncreaseApproval
             ? "Increasing Approval..."
-            : "Approving MXBT..."
+            : `Approving ${BID_TOKEN_SYMBOL}...`
           : needsIncreaseApproval
             ? "Increase Approval"
-            : "Approve MXBT"
+            : `Approve ${BID_TOKEN_SYMBOL}`
         : isBidFlowPending
           ? "Submitting Bid..."
           : isSimulating
@@ -793,7 +799,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   useEffect(() => {
     if (!revokeWait.isSuccess) return;
 
-    toast.success("Allowance revoked to 0 MXBT.");
+    toast.success(`Allowance revoked to 0 ${BID_TOKEN_SYMBOL}.`);
     void Promise.all([refetchAllowance(), refetchBalanceUSDC()]);
   }, [revokeWait.isSuccess, refetchAllowance, refetchBalanceUSDC]);
 
@@ -1179,8 +1185,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                         </p>
                         <p className="mt-1 font-sora text-lg font-bold text-[#1c1c2e]">
                           {lastAuctionAmount !== undefined
-                            ? `${formatUnits(lastAuctionAmount, 18)} MXBT`
-                            : "0 MXBT"}
+                              ? `${formatUnits(lastAuctionAmount, BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`
+                              : `0 ${BID_TOKEN_SYMBOL}`}
                         </p>
                       </div>
                     </div>
@@ -1307,7 +1313,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                       <div className="space-y-2 text-xs text-[#2f2a45]">
                         <p>
                           <span className="font-semibold">Bid amount:</span> how
-                          many MXBT you want to bid.
+                          many {BID_TOKEN_SYMBOL} you want to bid.
                         </p>
                         <p>
                           <span className="font-semibold">Project URL:</span>{" "}
@@ -1342,7 +1348,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                       {formattedBalanceUSDC}
                     </span>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-700">
-                      MXBT
+                      {BID_TOKEN_SYMBOL}
                     </span>
                     <Button
                       type="button"
@@ -1360,7 +1366,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               </div>
 
               <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] text-blue-900">
-                Two actions are required: first approve MXBT spending, then
+                Two actions are required: first approve {BID_TOKEN_SYMBOL} spending, then
                 click Pay & Continue to submit your on-chain bid.
               </div>
 
@@ -1368,7 +1374,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 <Input
                   id="bid-amount"
                   type="number"
-                  placeholder="Enter your MXBT bid"
+                  placeholder={`Enter your ${BID_TOKEN_SYMBOL} bid`}
                   value={rawBidAmountInput}
                   onChange={(e) => setRawBidAmountInput(e.target.value)}
                   className="min-h-[36px] flex-1 w-full bg-white text-[#1f1a31] placeholder:text-[#7b718f]"
@@ -1425,11 +1431,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                     <span>
                       Allowance:{" "}
                       <span className="font-semibold">
-                        {formattedAllowance} MXBT
+                        {formattedAllowance} {BID_TOKEN_SYMBOL}
                       </span>
                     </span>
                     <p className="mt-1 text-[10px] text-emerald-700/90">
-                      Allowance is only approval to spend MXBT. Your bid is
+                      Allowance is only approval to spend {BID_TOKEN_SYMBOL}. Your bid is
                       recorded only after the Place Bid transaction confirms.
                     </p>
                   </div>

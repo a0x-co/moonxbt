@@ -1,4 +1,9 @@
-import { AUCTION_ABI, AUCTION_CONTRACT_ADDRESS } from "@/constants/contracts";
+import {
+  AUCTION_ABI,
+  AUCTION_CONTRACT_ADDRESS,
+  BID_TOKEN_DECIMALS,
+  BID_TOKEN_SYMBOL,
+} from "@/constants/contracts";
 import { targetChainId } from "@/config/chainConfig";
 import { formatUnits } from "viem";
 import { useReadContract, useReadContracts } from "wagmi";
@@ -39,19 +44,21 @@ export function useAuctionData(): AuctionData {
     error: auctionContractsError,
     refetch: refetchAuctionData,
   } = useReadContracts({
-    chainId: targetChainId,
     contracts: [
       {
+        chainId: targetChainId,
         address: AUCTION_CONTRACT_ADDRESS,
         abi: AUCTION_ABI,
         functionName: "currentAuctionId",
       },
       {
+        chainId: targetChainId,
         address: AUCTION_CONTRACT_ADDRESS,
         abi: AUCTION_ABI,
         functionName: "getTimeRemaining",
       },
       {
+        chainId: targetChainId,
         address: AUCTION_CONTRACT_ADDRESS,
         abi: AUCTION_ABI,
         functionName: "getLastAuctionWinner",
@@ -197,8 +204,8 @@ export function useAuctionData(): AuctionData {
     currentBidder: normalizedCurrentBidder,
     currentBidAmount: currentBidAmount,
     formattedBidAmount: currentBidAmount
-      ? `${formatUnits(currentBidAmount, 18)} MXBT`
-      : "0 MXBT",
+      ? `${formatUnits(currentBidAmount, BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`
+      : `0 ${BID_TOKEN_SYMBOL}`,
     currentResourceValue,
     parsedResourceValue: parseResourceValue(currentResourceValue),
     isLoading: isLoadingAuctionContracts || isLoadingBid,

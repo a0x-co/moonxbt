@@ -1,6 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  BID_TOKEN_DECIMALS,
+  BID_TOKEN_SYMBOL,
+} from "@/constants/contracts";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuctionData } from "@/hooks/useAuctionData";
@@ -148,7 +152,7 @@ export function BidForm({
       refetchAuctionData();
       refetchBid();
     },
-    { tokenDecimals: 6, tokenSymbol: "USDC" },
+    { tokenDecimals: BID_TOKEN_DECIMALS, tokenSymbol: BID_TOKEN_SYMBOL },
   );
   // --- FIN ÚNICA LLAMADA AL HOOK useBid ---
 
@@ -313,7 +317,7 @@ export function BidForm({
         />
         {/* Display balance */}
         <p className="text-xs text-gray-400 font-medium ml-2">
-          Balance: {balanceOfA0X} USDC
+          Balance: {balanceOfA0X} {BID_TOKEN_SYMBOL}
         </p>
       </div>
 
