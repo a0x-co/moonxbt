@@ -258,6 +258,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const [showRegenerateConfirmModal, setShowRegenerateConfirmModal] =
     useState(false);
   const [isHydratingDraft, setIsHydratingDraft] = useState(false);
+  const [lastAuctionVideoUrl, setLastAuctionVideoUrl] = useState<string | null>(
+    null,
+  );
 
   const {
     currentAuctionId,
@@ -412,11 +415,32 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     }
   }, [lastAuctionResourceValue]);
 
+  const parsedLastAuctionVideoCandidate = useMemo(() => {
+    const candidate = parsedLastAuctionResourceValue?.url;
+    if (!candidate) return null;
+
+    const normalized = candidate.toLowerCase();
+    const looksLikeVideo =
+      normalized.includes(".mp4") ||
+      normalized.includes(".webm") ||
+      normalized.includes(".mov") ||
+      normalized.includes("/moonxbt/video/") ||
+      normalized.includes("storage.googleapis.com/");
+
+    return looksLikeVideo ? candidate : null;
+  }, [parsedLastAuctionResourceValue]);
+
   const lastAuctionIdLabel = useMemo(() => {
     if (currentAuctionId === undefined || currentAuctionId === null) return "-";
     if (currentAuctionId <= BigInt(0)) return currentAuctionId.toString();
     return (currentAuctionId - BigInt(1)).toString();
   }, [currentAuctionId]);
+
+  const lastAuctionEntryId = useMemo(() => {
+    if (!lastAuctionWinner) return null;
+    if (!lastAuctionIdLabel || lastAuctionIdLabel === "-") return null;
+    return `auction-${lastAuctionIdLabel}-${lastAuctionWinner.toLowerCase()}`;
+  }, [lastAuctionIdLabel, lastAuctionWinner]);
 
   const formattedBalanceUSDC = Number(
     formatUnits(balanceUSDC || BigInt(0), BID_TOKEN_DECIMALS),
@@ -928,6 +952,61 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     toast.success("Your bid is now leading. Step 2 unlocked.");
   }, [isCurrentUserLeadingBidder, currentAuctionId, normalizedWalletAddress]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLastAuctionVideo = async () => {
+      if (!lastAuctionEntryId) {
+        setLastAuctionVideoUrl(null);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/moonxbt/auction/entry/${lastAuctionEntryId}`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          if (!cancelled) setLastAuctionVideoUrl(null);
+          return;
+        }
+
+        const data = (await readJsonSafe(res)) as {
+          entry?: {
+            latestVideo?: {
+              jobId?: string;
+              previewPublicUrl?: string;
+              previewBucket?: string;
+              previewPath?: string;
+            };
+          };
+        };
+
+        const latestVideo = data.entry?.latestVideo;
+        const resolvedUrl =
+          (latestVideo?.jobId
+            ? `/api/moonxbt/video/${latestVideo.jobId}/stream`
+            : null) ||
+          latestVideo?.previewPublicUrl ||
+          (latestVideo?.previewBucket && latestVideo?.previewPath
+            ? `https://storage.googleapis.com/${latestVideo.previewBucket}/${latestVideo.previewPath}`
+            : null);
+
+        if (!cancelled) {
+          setLastAuctionVideoUrl(resolvedUrl ?? null);
+        }
+      } catch {
+        if (!cancelled) setLastAuctionVideoUrl(null);
+      }
+    };
+
+    void loadLastAuctionVideo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lastAuctionEntryId]);
+
   const stopPolling = () => {
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
@@ -1195,7 +1274,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                   <div className="relative mx-auto w-full max-w-[130px] self-start overflow-hidden rounded-xl border border-white/40 bg-black/10 lg:mx-0 lg:justify-self-end">
                     <video
                       src={
-                        parsedLastAuctionResourceValue?.url ||
+                        lastAuctionVideoUrl ||
+                        parsedLastAuctionVideoCandidate ||
                         "/assets/moonxbtauction.mp4"
                       }
                       controls
