@@ -71,6 +71,11 @@ The TokenAuction contract enables recurring auctions where users bid with ERC20 
    cp .env.example .env
    ```
 
+   For Base mainnet deployment, you can also start from:
+   ```bash
+   cp .env.mainnet.example .env
+   ```
+
 4. Fill in your environment variables in the `.env` file:
    ```
    BASE_RPC_URL=<your-base-rpc-url>

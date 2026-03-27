@@ -67,9 +67,9 @@ export async function deployMockToken() {
  * @returns Deployed TokenAuction contract
  */
 export async function deployTokenAuction(mockTokenAddress: string) {
+  void mockTokenAddress;
   // Use type assertion to bypass the type checking
   return await (hre.viem.deployContract as any)("TokenAuction", [
-    mockTokenAddress,
     TEST_VALUES.RESOURCE_NAME,
     TEST_VALUES.DEFAULT_VALUE
   ]);

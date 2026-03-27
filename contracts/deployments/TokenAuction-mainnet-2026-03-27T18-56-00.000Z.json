@@ -1,0 +1,20 @@
+{
+  "network": "base-mainnet",
+  "chainId": 8453,
+  "deployedAt": "2026-03-27T18:56:00.000Z",
+  "deployer": "0x07D758E7d6aB5b8cF80f78d43e92F277Bb02e10A",
+  "owner": "0x750438B64AAfc076AC4fc12F6Ae21251a0693477",
+  "deploymentTxHash": null,
+  "tokenAuction": {
+    "address": "0xcF9339008C5705b9bB07dfeb09207ae2845b0713",
+    "constructorArgs": {
+      "resourceName": "Video Prompt URL",
+      "defaultResourceValue": "https://www.moonxbt.fun/"
+    }
+  },
+  "bidToken": {
+    "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "priceUsd8": "100000000"
+  },
+  "note": "Contract deployed successfully; ownership transfer completed later via setup:base after nonce collision in deploy script."
+}
