@@ -75,6 +75,12 @@ type AuctionEntryResponse = {
       previewBucket?: string | null;
       previewPath?: string | null;
     };
+    latestScript?: {
+      jobId?: string | null;
+      scriptUsed?: string | null;
+      promptUsed?: string | null;
+      createdAt?: string | null;
+    };
     project?: {
       url?: string | null;
       description?: string | null;
@@ -586,6 +592,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       const currentJobStatus = data?.entry?.currentJob?.status || null;
       const latestJobId = data?.entry?.latestVideo?.jobId || null;
       const latestScript = data?.entry?.latestVideo?.scriptUsed || null;
+      const latestScriptJobId = data?.entry?.latestScript?.jobId || null;
+      const latestScriptOnly = data?.entry?.latestScript?.scriptUsed || null;
       const latestPreviewPublicUrl =
         data?.entry?.latestVideo?.previewPublicUrl || null;
       const latestPreviewBucket =
@@ -622,6 +630,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             `https://storage.googleapis.com/${latestPreviewBucket}/${latestPreviewPath}`,
           );
         }
+      } else if (latestScriptOnly) {
+        setJobId(latestScriptJobId);
+        setJobStatus("completed");
+        setScriptUsed(latestScriptOnly);
+        setPreviewUrl(null);
       }
     } finally {
       setIsHydratingDraft(false);
@@ -1075,6 +1088,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
         },
         body: JSON.stringify({
           userPrompt: effectivePrompt,
+          generateVideo: false,
           auctionEntryId,
           userAddress: normalizedWalletAddress,
           maxBid: rawBidAmountInput,
@@ -1093,21 +1107,29 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       const data = await readJsonSafe(res);
       const jobIdFromResponse =
         typeof data?.jobId === "string" ? data.jobId : null;
-      if (!res.ok || !jobIdFromResponse) {
+      if (!res.ok) {
         throw new Error(
           (typeof data?.error === "string" && data.error) ||
-            `Failed to start generation (${res.status})`,
+            `Failed to generate script (${res.status})`,
         );
       }
 
       if (!auto) {
-        toast.success("Video generation started.");
+        toast.success("Script generated.");
       }
       setJobId(jobIdFromResponse);
       if (typeof data.scriptUsed === "string") setScriptUsed(data.scriptUsed);
-      pollJob(jobIdFromResponse);
+      const normalizedStatus = normalizeJobStatus(data.status);
+      setJobStatus(normalizedStatus);
+      setIsGenerating(false);
+      if (
+        jobIdFromResponse &&
+        (normalizedStatus === "pending" || normalizedStatus === "processing")
+      ) {
+        pollJob(jobIdFromResponse);
+      }
     } catch (error) {
-      toast.error("Failed to start video generation.");
+      toast.error("Failed to generate script.");
       setGenerationError(
         error instanceof Error ? error.message : "Generation failed",
       );
@@ -1118,7 +1140,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const handleRegenerateClick = () => {
     if (!canGenerate) return;
 
-    if (previewUrl) {
+    if (scriptUsed) {
       setShowRegenerateConfirmModal(true);
       return;
     }
@@ -1185,13 +1207,13 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex h-screen w-screen flex-col items-center justify-start">
+    <div className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col items-center justify-start overflow-hidden">
       <div
         className="absolute inset-0 bg-black/45 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex w-full justify-center pb-2 pt-8">
+      <div className="relative z-10 flex w-full justify-center pb-2 pt-4 sm:pt-8">
         <Image
           src="/assets/moonxbt.png"
           alt="MoonXBT"
@@ -1202,14 +1224,13 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       </div>
 
       <div
-        className="relative z-10 flex w-full justify-center overflow-y-auto px-4 sm:px-8 md:px-12"
-        style={{ maxHeight: "95vh" }}
+        className="relative z-10 flex w-full flex-1 justify-center overflow-y-auto px-3 pb-4 sm:px-8 md:px-12"
         onClick={(e) => e.stopPropagation()}
       >
-        <Card className="relative mx-auto w-full max-w-3xl border border-white/50 bg-[#f1e4ee]/95 p-6 text-[#1e1730] shadow-2xl sm:p-8">
+        <Card className="relative mx-auto max-h-full w-full max-w-3xl overflow-y-auto overscroll-contain border border-white/50 bg-[#f1e4ee]/95 p-4 text-[#1e1730] shadow-2xl sm:p-8">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/60 bg-white/25 text-4xl font-extrabold text-white shadow-xl backdrop-blur hover:bg-white/35 sm:h-16 sm:w-16 sm:text-5xl"
+            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/25 text-3xl font-extrabold text-white shadow-xl backdrop-blur hover:bg-white/35 sm:right-4 sm:top-4 sm:h-16 sm:w-16 sm:text-5xl"
             aria-label="Close"
           >
             ×
@@ -1227,7 +1248,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             className={`overflow-hidden transition-all duration-500 ${
               activeStep === 2
                 ? "mb-0 max-h-0 opacity-0"
-                : "mb-5 max-h-[520px] opacity-100"
+                : "mb-5 max-h-[76dvh] opacity-100 sm:max-h-[520px]"
             }`}
           >
             <div className="space-y-3">
@@ -1354,7 +1375,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 disabled={!canAccessStep2}
                 className="flex-1 rounded-lg px-4 py-2 text-xs font-semibold text-[#2a2242] data-[state=active]:bg-[#1f1a31] data-[state=active]:text-white"
               >
-                Step 2: Configure + Generate {!canAccessStep2 ? "(locked)" : ""}
+                Step 2: Script {!canAccessStep2 ? "(locked)" : ""}
               </TabsTrigger>
             </TabsList>
 
@@ -1366,7 +1387,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             )}
 
             <TabsContent value="1" className="m-0">
-              <div className="mb-3 flex items-start justify-between gap-3">
+              <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold text-[#2a2242]">
                     Step 1: Place Leading Bid (Required)
@@ -1416,7 +1437,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 </div>
 
                 {wallet?.address ? (
-                  <div className="inline-flex h-8 items-center gap-2 rounded-lg border border-emerald-300/70 bg-emerald-50 px-2 shadow-sm">
+                  <div className="flex h-auto w-full flex-wrap items-center gap-1.5 rounded-lg border border-emerald-300/70 bg-emerald-50 px-2 py-1 shadow-sm sm:inline-flex sm:h-8 sm:w-auto sm:gap-2 sm:py-0">
                     <FaWallet className="text-[11px] text-emerald-700" />
                     <span className="text-[9px] font-semibold uppercase tracking-widest text-emerald-700">
                       Wallet
@@ -1450,14 +1471,14 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 click Pay & Continue to submit your on-chain bid.
               </div>
 
-              <div className="mb-3 flex w-full flex-row items-center gap-3">
+              <div className="mb-3 flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <Input
                   id="bid-amount"
                   type="number"
                   placeholder={`Enter your ${BID_TOKEN_SYMBOL} bid`}
                   value={rawBidAmountInput}
                   onChange={(e) => setRawBidAmountInput(e.target.value)}
-                  className="min-h-[36px] flex-1 w-full bg-white text-[#1f1a31] placeholder:text-[#7b718f]"
+                  className="min-h-[36px] w-full flex-1 bg-white text-[#1f1a31] placeholder:text-[#7b718f]"
                   min="0"
                   step="0.01"
                   disabled={isAnyPending}
@@ -1465,7 +1486,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 <Button
                   type="button"
                   onClick={handleStep1Action}
-                  className={`h-[42px] w-auto min-w-[150px] gap-2 border border-black/20 text-sm font-bold ${
+                  className={`h-[42px] w-full gap-2 border border-black/20 text-sm font-bold sm:w-auto sm:min-w-[150px] ${
                     step1ButtonLabel === 'Pay & Continue'
                       ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                       : 'bg-[#f4d20b] hover:bg-[#ffd700] text-black'
@@ -1506,7 +1527,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               />
 
               {wallet?.address && (
-                <div className="mt-2 flex items-center justify-between gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                <div className="mt-2 flex flex-col gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <span>
                       Allowance:{" "}
@@ -1581,7 +1602,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               }`}
             >
               <h3 className="mb-2 text-sm font-semibold text-[#2a2242]">
-                Step 2: Video Script + Generation
+                Step 2: Script Generation
               </h3>
               {!canAccessStep2 && (
                 <p className="mb-3 text-xs text-[#2f2f46]">
@@ -1593,7 +1614,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               {canAccessStep2 && (
                 <div className="mb-[20px] rounded-lg border border-cyan-200/70 bg-cyan-50/70 px-3 py-2">
                   <p className="mb-3 text-xs font-semibold text-cyan-900">
-                    Video generation status (background async job)
+                    Script generation status
                   </p>
 
                   <div className="grid grid-cols-[36px_1fr_36px_1fr_36px] items-center gap-1 px-1 sm:grid-cols-[44px_1fr_44px_1fr_44px]">
@@ -1704,8 +1725,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               {showStep2Controls && (
                 <>
                   <p className="mb-2 text-[11px] text-[#5a5376]">
-                    If you don&apos;t like the result, edit your URL/prompt/tone
-                    and click Regenerate.
+                    Generate and validate your script here. The final video is
+                    generated only if you end up winning the auction.
                   </p>
                   <div className="mb-3 space-y-3">
                     <Input
@@ -1878,9 +1899,24 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                       disabled={!canGenerate}
                       className="border border-black/20 bg-[#ff4fb2] text-white hover:bg-[#ff63bd]"
                     >
-                      {isJobRunning ? "Generating..." : "Regenerate"}
+                      {isJobRunning
+                        ? "Generating Script..."
+                        : scriptUsed
+                          ? "Regenerate Script"
+                          : "Generate Script"}
                     </Button>
                   </div>
+
+                  {scriptUsed && (
+                    <div className="mb-2 rounded-lg border border-[#d3c8d9] bg-white/80 p-3">
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#4a4363]">
+                        Generated script preview
+                      </p>
+                      <p className="whitespace-pre-wrap text-xs leading-relaxed text-[#2f2a45]">
+                        {scriptUsed}
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -1936,11 +1972,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="mb-2 text-base font-semibold text-[#221a35]">
-              Regenerate video?
+              Regenerate script?
             </h4>
             <p className="text-sm text-[#3a3152]">
-              Are you sure you want to create the video again? This will replace
-              the video currently shown to you.
+              Are you sure you want to regenerate the script? This will replace
+              the script currently shown to you.
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <Button
@@ -1956,7 +1992,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 className="border border-black/20 bg-[#ff4fb2] text-white hover:bg-[#ff63bd]"
                 onClick={handleConfirmRegenerate}
               >
-                Regenerate
+                Regenerate Script
               </Button>
             </div>
           </div>
