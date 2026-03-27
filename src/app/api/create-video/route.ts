@@ -2,7 +2,11 @@ import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_KEY = process.env.API_KEY;
-const A0X_AGENT_API_URL = process.env.A0X_AGENT_API_URL;
+const BACKEND_BASE_URL =
+  process.env.MOONXBT_API_URL ||
+  process.env.A0X_AGENT_API_URL ||
+  process.env.NEXT_PUBLIC_MOONXBT_API_URL ||
+  "";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Call backend endpoint
     const response = await axios.post(
-      `${A0X_AGENT_API_URL}/moonxbt/create-influencer-video`,
+      `${BACKEND_BASE_URL}/moonxbt/create-influencer-video`,
       projectData,
       {
         headers: {

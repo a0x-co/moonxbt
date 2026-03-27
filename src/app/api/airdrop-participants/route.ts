@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
+export const dynamic = "force-dynamic";
+
 const API_KEY = process.env.A0X_AGENT_API_KEY;
-const A0X_AGENT_API_URL = process.env.A0X_AGENT_API_URL;
+const BACKEND_BASE_URL =
+  process.env.MOONXBT_API_URL ||
+  process.env.A0X_AGENT_API_URL ||
+  process.env.NEXT_PUBLIC_MOONXBT_API_URL ||
+  "";
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +25,7 @@ export async function GET(request: NextRequest) {
     } = Object.fromEntries(searchParams.entries());
 
     const response = await axios.get(
-      `${A0X_AGENT_API_URL}/moonxbt/airdrop/admin-dashboard`,
+      `${BACKEND_BASE_URL}/moonxbt/airdrop/admin-dashboard`,
       {
         params: {
           fid,
@@ -61,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await axios.post(
-      `${A0X_AGENT_API_URL}/moonxbt/airdrop/admin-dashboard`,
+      `${BACKEND_BASE_URL}/moonxbt/airdrop/admin-dashboard`,
       {
         action: "update_task",
         farcasterFid,

@@ -1,8 +1,14 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const API_KEY = process.env.API_KEY;
-const A0X_AGENT_API_URL = process.env.A0X_AGENT_API_URL;
+const BACKEND_BASE_URL =
+  process.env.MOONXBT_API_URL ||
+  process.env.A0X_AGENT_API_URL ||
+  process.env.NEXT_PUBLIC_MOONXBT_API_URL ||
+  "";
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await axios.get(
-      `${A0X_AGENT_API_URL}/moonxbt/${influencerId}/videos`,
+      `${BACKEND_BASE_URL}/moonxbt/${influencerId}/videos`,
       {
         headers: {
           "x-api-key": API_KEY!,

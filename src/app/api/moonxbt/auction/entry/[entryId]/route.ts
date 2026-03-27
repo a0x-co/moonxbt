@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_BASE_URL =
-  process.env.A0X_AGENT_API_URL ||
   process.env.MOONXBT_API_URL ||
+  process.env.A0X_AGENT_API_URL ||
   process.env.NEXT_PUBLIC_MOONXBT_API_URL ||
   "";
 
