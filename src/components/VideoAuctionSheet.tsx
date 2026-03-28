@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  FaAlignLeft,
   FaInfoCircle,
   FaPlayCircle,
   FaSignOutAlt,
@@ -80,10 +81,21 @@ type AuctionEntryResponse = {
       scriptUsed?: string | null;
       promptUsed?: string | null;
       createdAt?: string | null;
+      tone?: Tone | null;
+      mood?: Mood | null;
+      enthusiasmLevel?: number | null;
+      hypePercent?: number | null;
     };
     project?: {
       url?: string | null;
       description?: string | null;
+    };
+    creativeControls?: {
+      tone?: Tone | null;
+      mood?: Mood | null;
+      enthusiasmLevel?: number | null;
+      hypePercent?: number | null;
+      updatedAt?: string | null;
     };
   };
 };
@@ -264,6 +276,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   const [showRegenerateConfirmModal, setShowRegenerateConfirmModal] =
     useState(false);
   const [isHydratingDraft, setIsHydratingDraft] = useState(false);
+  const [isSavingControls, setIsSavingControls] = useState(false);
+  const [hasUnsavedControls, setHasUnsavedControls] = useState(false);
   const [lastAuctionVideoUrl, setLastAuctionVideoUrl] = useState<string | null>(
     null,
   );
@@ -594,6 +608,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       const latestScript = data?.entry?.latestVideo?.scriptUsed || null;
       const latestScriptJobId = data?.entry?.latestScript?.jobId || null;
       const latestScriptOnly = data?.entry?.latestScript?.scriptUsed || null;
+      const storedControls = data?.entry?.creativeControls;
       const latestPreviewPublicUrl =
         data?.entry?.latestVideo?.previewPublicUrl || null;
       const latestPreviewBucket =
@@ -603,6 +618,27 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       if (storedBid) setRawBidAmountInput(storedBid);
       if (storedUrl) setRawResourceUrlInput(storedUrl);
       if (storedDescription) setRawResourceMetadataInput(storedDescription);
+      if (storedControls?.tone) setTone(storedControls.tone);
+      else if (data?.entry?.latestScript?.tone)
+        setTone(data.entry.latestScript.tone);
+      if (storedControls?.mood) setMood(storedControls.mood);
+      else if (data?.entry?.latestScript?.mood)
+        setMood(data.entry.latestScript.mood);
+      if (typeof storedControls?.hypePercent === "number") {
+        setHypePercent(storedControls.hypePercent);
+      } else if (typeof data?.entry?.latestScript?.hypePercent === "number") {
+        setHypePercent(data.entry.latestScript.hypePercent);
+      } else if (
+        typeof data?.entry?.latestScript?.enthusiasmLevel === "number"
+      ) {
+        setHypePercent(
+          Math.max(
+            0,
+            Math.min(100, (data.entry.latestScript.enthusiasmLevel - 1) * 25),
+          ),
+        );
+      }
+      setHasUnsavedControls(false);
 
       if (
         currentJobId &&
@@ -660,6 +696,59 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
     });
   };
 
+  const persistCreativeControlsToBackend = async ({
+    showToast = true,
+  }: { showToast?: boolean } = {}) => {
+    if (
+      !auctionEntryId ||
+      !normalizedWalletAddress ||
+      currentAuctionId == null
+    ) {
+      return false;
+    }
+
+    setIsSavingControls(true);
+    try {
+      const res = await fetch(`/api/moonxbt/auction/entry/${auctionEntryId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          auctionId: currentAuctionId.toString(),
+          userAddress: normalizedWalletAddress,
+          tone,
+          mood,
+          hypePercent,
+          enthusiasmLevel: normalizedEnthusiasmLevel,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await readJsonSafe(res);
+        throw new Error(
+          (typeof data?.error === "string" && data.error) ||
+            `Failed to save controls (${res.status})`,
+        );
+      }
+
+      setHasUnsavedControls(false);
+      if (showToast) {
+        toast.success("Video controls saved.");
+      }
+      return true;
+    } catch (error) {
+      if (showToast) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to save controls",
+        );
+      }
+      return false;
+    } finally {
+      setIsSavingControls(false);
+    }
+  };
+
   useEffect(() => {
     const storedBidAmount = localStorage.getItem("moonxbt-bid-amount");
     const storedUrl = localStorage.getItem("moonxbt-resource-url");
@@ -681,6 +770,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
   useEffect(() => {
     localStorage.setItem("moonxbt-resource-metadata", rawResourceMetadataInput);
   }, [rawResourceMetadataInput]);
+
+  useEffect(() => {
+    if (!canAccessStep2 || isHydratingDraft) return;
+    setHasUnsavedControls(true);
+  }, [tone, hypePercent, mood, canAccessStep2, isHydratingDraft]);
 
   useEffect(() => {
     if (!isOpen || !auctionEntryId) return;
@@ -975,9 +1069,12 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       }
 
       try {
-        const res = await fetch(`/api/moonxbt/auction/entry/${lastAuctionEntryId}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(
+          `/api/moonxbt/auction/entry/${lastAuctionEntryId}`,
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!res.ok) {
           if (!cancelled) setLastAuctionVideoUrl(null);
@@ -1073,6 +1170,11 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
 
   const handleGenerate = async ({ auto = false }: { auto?: boolean } = {}) => {
     if (!canGenerate) return;
+
+    const controlsSaved = await persistCreativeControlsToBackend({
+      showToast: false,
+    });
+    if (!controlsSaved) return;
 
     setGenerationError(null);
     setIsGenerating(true);
@@ -1285,8 +1387,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                         </p>
                         <p className="mt-1 font-sora text-lg font-bold text-[#1c1c2e]">
                           {lastAuctionAmount !== undefined
-                              ? `${formatUnits(lastAuctionAmount, BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`
-                              : `0 ${BID_TOKEN_SYMBOL}`}
+                            ? `${formatUnits(lastAuctionAmount, BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`
+                            : `0 ${BID_TOKEN_SYMBOL}`}
                         </p>
                       </div>
                     </div>
@@ -1467,8 +1569,8 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               </div>
 
               <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] text-blue-900">
-                Two actions are required: first approve {BID_TOKEN_SYMBOL} spending, then
-                click Pay & Continue to submit your on-chain bid.
+                Two actions are required: first approve {BID_TOKEN_SYMBOL}{" "}
+                spending, then click Pay & Continue to submit your on-chain bid.
               </div>
 
               <div className="mb-3 flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
@@ -1487,9 +1589,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                   type="button"
                   onClick={handleStep1Action}
                   className={`h-[42px] w-full gap-2 border border-black/20 text-sm font-bold sm:w-auto sm:min-w-[150px] ${
-                    step1ButtonLabel === 'Pay & Continue'
-                      ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                      : 'bg-[#f4d20b] hover:bg-[#ffd700] text-black'
+                    step1ButtonLabel === "Pay & Continue"
+                      ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                      : "bg-[#f4d20b] hover:bg-[#ffd700] text-black"
                   }`}
                   disabled={
                     (!wallet?.address && !ready) ||
@@ -1536,8 +1638,9 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                       </span>
                     </span>
                     <p className="mt-1 text-[10px] text-emerald-700/90">
-                      Allowance is only approval to spend {BID_TOKEN_SYMBOL}. Your bid is
-                      recorded only after the Place Bid transaction confirms.
+                      Allowance is only approval to spend {BID_TOKEN_SYMBOL}.
+                      Your bid is recorded only after the Place Bid transaction
+                      confirms.
                     </p>
                   </div>
                   {hasAllowance && (
@@ -1597,7 +1700,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
 
             <TabsContent
               value="2"
-              className={`m-0 overflow-y-auto rounded-2xl border border-white/55 bg-gradient-to-b from-white/72 to-white/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm transition-all duration-500 ${
+              className={`m-0 overflow-y-auto transition-all duration-500 ${
                 activeStep === 2 ? "max-h-[72vh]" : "max-h-[46vh]"
               }`}
             >
@@ -1617,26 +1720,31 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                     Script generation status
                   </p>
 
-                  <div className="grid grid-cols-[36px_1fr_36px_1fr_36px] items-center gap-1 px-1 sm:grid-cols-[44px_1fr_44px_1fr_44px]">
-                    <div
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold sm:h-11 sm:w-11 ${
-                        isStepStartCurrent
-                          ? "stepper-node-active border-blue-600 bg-blue-600 text-white"
-                          : isStepStartDone
-                            ? "border-green-700 bg-green-700 text-white"
-                            : "border-slate-300 bg-white text-slate-400"
-                      }`}
-                    >
-                      {isStepStartCurrent ? (
-                        <FaSpinner className="animate-spin text-sm" />
-                      ) : isStepStartDone ? (
-                        "✓"
-                      ) : (
-                        "1"
-                      )}
+                  <div className="grid grid-cols-[56px_1fr_56px_1fr_56px] items-start gap-1 px-1 sm:grid-cols-[72px_1fr_72px_1fr_72px]">
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold sm:h-11 sm:w-11 ${
+                          isStepStartCurrent
+                            ? "stepper-node-active border-blue-600 bg-blue-600 text-white"
+                            : isStepStartDone
+                              ? "border-green-700 bg-green-700 text-white"
+                              : "border-slate-300 bg-white text-slate-400"
+                        }`}
+                      >
+                        {isStepStartCurrent ? (
+                          <FaSpinner className="animate-spin text-sm" />
+                        ) : isStepStartDone ? (
+                          "✓"
+                        ) : (
+                          "1"
+                        )}
+                      </div>
+                      <span className="mt-2 text-center text-[11px] font-medium leading-none text-cyan-900/90">
+                        Start
+                      </span>
                     </div>
                     <div
-                      className={`stepper-line h-1 rounded-full ${
+                      className={`stepper-line mt-4 h-1 rounded-full sm:mt-5 ${
                         isStepProcessingDone
                           ? "bg-green-700"
                           : isStepProcessingCurrent
@@ -1644,25 +1752,30 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                             : "bg-slate-300"
                       }`}
                     />
-                    <div
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold sm:h-11 sm:w-11 ${
-                        isStepProcessingCurrent
-                          ? "stepper-node-active border-blue-600 bg-blue-600 text-white"
-                          : isStepProcessingDone
-                            ? "border-green-700 bg-green-700 text-white"
-                            : "border-slate-300 bg-white text-slate-400"
-                      }`}
-                    >
-                      {isStepProcessingCurrent ? (
-                        <FaSpinner className="animate-spin text-sm" />
-                      ) : isStepProcessingDone ? (
-                        "✓"
-                      ) : (
-                        "2"
-                      )}
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold sm:h-11 sm:w-11 ${
+                          isStepProcessingCurrent
+                            ? "stepper-node-active border-blue-600 bg-blue-600 text-white"
+                            : isStepProcessingDone
+                              ? "border-green-700 bg-green-700 text-white"
+                              : "border-slate-300 bg-white text-slate-400"
+                        }`}
+                      >
+                        {isStepProcessingCurrent ? (
+                          <FaSpinner className="animate-spin text-sm" />
+                        ) : isStepProcessingDone ? (
+                          "✓"
+                        ) : (
+                          "2"
+                        )}
+                      </div>
+                      <span className="mt-2 text-center text-[11px] font-medium leading-none text-cyan-900/90">
+                        Processing
+                      </span>
                     </div>
                     <div
-                      className={`stepper-line h-1 rounded-full ${
+                      className={`stepper-line mt-4 h-1 rounded-full sm:mt-5 ${
                         isStepDoneCurrent
                           ? "stepper-line-active bg-blue-300"
                           : isStepDone
@@ -1670,54 +1783,45 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                             : "bg-slate-300"
                       }`}
                     />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (isStepDone && previewUrl) {
-                                setShowCompletedPreviewModal(true);
-                              }
-                            }}
-                            disabled={!isStepDone || !previewUrl}
-                            className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold transition-colors sm:h-11 sm:w-11 ${
-                              isStepDoneCurrent
-                                ? "stepper-node-active border-blue-600 bg-blue-600 text-white hover:bg-blue-700"
-                                : isStepDone
-                                  ? "border-green-700 bg-green-700 text-white hover:bg-green-800"
-                                  : "border-slate-300 bg-white text-slate-400"
-                            } ${!isStepDone || !previewUrl ? "cursor-default" : "cursor-pointer"}`}
-                            aria-label="Done step"
-                          >
-                            <FaPlayCircle
-                              className={
+                    <div className="flex flex-col items-center">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (isStepDone && previewUrl) {
+                                  setShowCompletedPreviewModal(true);
+                                }
+                              }}
+                              disabled={!isStepDone || !previewUrl}
+                              className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold transition-colors sm:h-11 sm:w-11 ${
                                 isStepDoneCurrent
-                                  ? "animate-pulse text-base"
-                                  : "text-base"
-                              }
-                            />
-                          </button>
-                        </TooltipTrigger>
-                        {isStepDone && previewUrl && (
-                          <TooltipContent>
-                            <p className="text-xs">See video</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-
-                  <div className="mt-2 grid grid-cols-[36px_1fr_36px_1fr_36px] items-center text-center text-[11px] font-medium text-cyan-900/90 sm:grid-cols-[44px_1fr_44px_1fr_44px]">
-                    <span className="col-start-1 justify-self-center">
-                      Start
-                    </span>
-                    <span className="col-start-3 justify-self-center">
-                      Processing
-                    </span>
-                    <span className="col-start-5 justify-self-center">
-                      Done
-                    </span>
+                                  ? "stepper-node-active border-blue-600 bg-blue-600 text-white hover:bg-blue-700"
+                                  : isStepDone
+                                    ? "border-green-700 bg-green-700 text-white hover:bg-green-800"
+                                    : "border-slate-300 bg-white text-slate-400"
+                              } ${!isStepDone || !previewUrl ? "cursor-default" : "cursor-pointer"}`}
+                              aria-label="Done step"
+                            >
+                              <FaAlignLeft
+                                className={`text-[13px] ${
+                                  isStepDoneCurrent ? "animate-pulse" : ""
+                                }`}
+                              />
+                            </button>
+                          </TooltipTrigger>
+                          {isStepDone && previewUrl && (
+                            <TooltipContent>
+                              <p className="text-xs">See result</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                      <span className="mt-2 text-center text-[11px] font-medium leading-none text-cyan-900/90">
+                        Done
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1728,7 +1832,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                     Generate and validate your script here. The final video is
                     generated only if you end up winning the auction.
                   </p>
-                  <div className="mb-3 space-y-3">
+                  <div className="mb-6 space-y-3">
                     <Input
                       id="step2-resource-url"
                       type="url"
@@ -1750,138 +1854,189 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                       className="bg-white text-[#1f1a31] placeholder:text-[#7b718f]"
                       disabled={!canAccessStep2 || isJobRunning}
                     />
+                  </div>
 
-                    <TooltipProvider>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-0 sm:items-start">
+                  <div className="mb-6 space-y-6">
+                    <div className="rounded-lg border border-white/50 bg-white/55 px-3 py-2">
+                      <div className="flex items-center justify-between gap-3">
                         <div>
-                          <div className="mb-2 flex items-center gap-1">
-                            <p className="text-xs font-medium text-[#3a3152]">
-                              Tone
-                            </p>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent"
-                                  aria-label="Tone info"
-                                  title="Tone info"
-                                >
-                                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#bcb5cf] bg-white text-[10px] font-bold text-[#3a3152]">
-                                    i
-                                  </span>
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-[180px] text-xs">
-                                  {CONTROL_HINTS.tone}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {TONES.map((t) => (
-                              <button
-                                key={t.value}
-                                type="button"
-                                onClick={() => setTone(t.value)}
-                                disabled={!canAccessStep2 || isJobRunning}
-                                className={`rounded-full border px-3 py-1 text-xs ${tone === t.value ? "border-[#1f1a31] bg-[#1f1a31] text-white" : "border-gray-300 bg-white text-[#2f2a45]"}`}
-                              >
-                                {t.label}
-                              </button>
-                            ))}
-                          </div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#3d3457]">
+                            Control pannel for Video
+                          </p>
+                          <p className="mt-1 text-[11px] text-[#6a6282]">
+                            Save the voice and energy settings that should be
+                            used for the winner video.
+                          </p>
                         </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            void persistCreativeControlsToBackend();
+                          }}
+                          disabled={
+                            !canAccessStep2 ||
+                            isJobRunning ||
+                            isSavingControls ||
+                            !hasUnsavedControls
+                          }
+                          className={
+                            hasUnsavedControls
+                              ? "border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600"
+                              : "border-[#cdbfde] bg-white text-[#2a2242] hover:bg-[#f8f4fb]"
+                          }
+                        >
+                          {isSavingControls
+                            ? "Saving..."
+                            : hasUnsavedControls
+                              ? "Save controls"
+                              : "Saved"}
+                        </Button>
+                      </div>
 
-                        <div className="sm:px-5">
+                      <TooltipProvider>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-start sm:gap-5">
+                          <div className="flex h-full flex-col justify-start">
+                            <div className="mb-2 flex items-center gap-1">
+                              <p className="text-xs font-medium text-[#3a3152]">
+                                Tone
+                              </p>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent"
+                                    aria-label="Tone info"
+                                    title="Tone info"
+                                  >
+                                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#bcb5cf] bg-white text-[10px] font-bold text-[#3a3152]">
+                                      i
+                                    </span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-[180px] text-xs">
+                                    {CONTROL_HINTS.tone}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {TONES.map((t) => (
+                                <button
+                                  key={t.value}
+                                  type="button"
+                                  onClick={() => setTone(t.value)}
+                                  disabled={!canAccessStep2 || isJobRunning}
+                                  className={`rounded-full border px-3 py-1 text-xs ${tone === t.value ? "border-[#1f1a31] bg-[#1f1a31] text-white" : "border-gray-300 bg-white text-[#2f2a45]"}`}
+                                >
+                                  {t.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                        <div className="flex h-full flex-col justify-start sm:px-2">
                           <div className="rounded-lg border border-white/50 bg-white/75 px-3 py-2">
                             <div className="mb-1 flex items-center justify-between">
-                              <div className="flex items-center gap-1">
-                                <p className="text-xs font-medium text-[#3a3152]">
-                                  Hype
-                                </p>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent"
-                                      aria-label="Hype info"
-                                      title="Hype info"
-                                    >
-                                      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#bcb5cf] bg-white text-[10px] font-bold text-[#3a3152]">
-                                        i
-                                      </span>
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="max-w-[180px] text-xs">
-                                      {CONTROL_HINTS.hype}
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
+                                <div className="flex items-center gap-1">
+                                  <p className="text-xs font-medium text-[#3a3152]">
+                                    Hype
+                                  </p>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent"
+                                        aria-label="Hype info"
+                                        title="Hype info"
+                                      >
+                                        <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#bcb5cf] bg-white text-[10px] font-bold text-[#3a3152]">
+                                          i
+                                        </span>
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-[180px] text-xs">
+                                        {CONTROL_HINTS.hype}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                                <span className="text-[11px] font-semibold text-[#2f2a45]">
+                                  {hypePercent}%
+                                </span>
                               </div>
-                              <span className="text-[11px] font-semibold text-[#2f2a45]">
-                                {hypePercent}%
-                              </span>
+                              <input
+                                type="range"
+                                min={0}
+                                max={100}
+                                step={1}
+                                value={hypePercent}
+                                onChange={(e) =>
+                                  setHypePercent(Number(e.target.value))
+                                }
+                                disabled={!canAccessStep2 || isJobRunning}
+                                className="h-1.5 w-full accent-[#1f1a31]"
+                                aria-label="Hype"
+                              />
                             </div>
-                            <input
-                              type="range"
-                              min={0}
-                              max={100}
-                              step={1}
-                              value={hypePercent}
-                              onChange={(e) =>
-                                setHypePercent(Number(e.target.value))
-                              }
-                              disabled={!canAccessStep2 || isJobRunning}
-                              className="h-1.5 w-full accent-[#1f1a31]"
-                              aria-label="Hype"
-                            />
                           </div>
-                        </div>
 
-                        <div>
+                        <div className="flex h-full flex-col justify-start">
                           <div className="mb-2 flex items-center gap-1">
                             <p className="text-xs font-medium text-[#3a3152]">
                               Mood
-                            </p>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
+                              </p>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent"
+                                    aria-label="Mood info"
+                                    title="Mood info"
+                                  >
+                                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#bcb5cf] bg-white text-[10px] font-bold text-[#3a3152]">
+                                      i
+                                    </span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-[180px] text-xs">
+                                    {CONTROL_HINTS.mood}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {MOODS.map((m) => (
                                 <button
+                                  key={m.value}
                                   type="button"
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent"
-                                  aria-label="Mood info"
-                                  title="Mood info"
+                                  onClick={() => setMood(m.value)}
+                                  disabled={!canAccessStep2 || isJobRunning}
+                                  className={`rounded-full border px-3 py-1 text-xs ${mood === m.value ? "border-[#1f1a31] bg-[#1f1a31] text-white" : "border-gray-300 bg-white text-[#2f2a45]"}`}
                                 >
-                                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#bcb5cf] bg-white text-[10px] font-bold text-[#3a3152]">
-                                    i
-                                  </span>
+                                  {m.label}
                                 </button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-[180px] text-xs">
-                                  {CONTROL_HINTS.mood}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {MOODS.map((m) => (
-                              <button
-                                key={m.value}
-                                type="button"
-                                onClick={() => setMood(m.value)}
-                                disabled={!canAccessStep2 || isJobRunning}
-                                className={`rounded-full border px-3 py-1 text-xs ${mood === m.value ? "border-[#1f1a31] bg-[#1f1a31] text-white" : "border-gray-300 bg-white text-[#2f2a45]"}`}
-                              >
-                                {m.label}
-                              </button>
-                            ))}
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TooltipProvider>
+                      </TooltipProvider>
+                    </div>{" "}
                   </div>
+
+                  {scriptUsed && (
+                    <div className="mb-2 rounded-lg border border-[#d3c8d9] bg-white/80 p-3">
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#4a4363]">
+                        Generated script preview
+                      </p>
+                      <p className="whitespace-pre-wrap text-xs leading-relaxed text-[#2f2a45]">
+                        {scriptUsed}
+                      </p>
+                    </div>
+                  )}
 
                   <div className="mb-1 mt-4 flex justify-end gap-2">
                     {jobId && jobStatus === "failed" && isJobRecoverable && (
@@ -1906,17 +2061,6 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                           : "Generate Script"}
                     </Button>
                   </div>
-
-                  {scriptUsed && (
-                    <div className="mb-2 rounded-lg border border-[#d3c8d9] bg-white/80 p-3">
-                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#4a4363]">
-                        Generated script preview
-                      </p>
-                      <p className="whitespace-pre-wrap text-xs leading-relaxed text-[#2f2a45]">
-                        {scriptUsed}
-                      </p>
-                    </div>
-                  )}
                 </>
               )}
 
