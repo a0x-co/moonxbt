@@ -31,6 +31,11 @@ const orbitron = Orbitron({
 export const metadata: Metadata = {
   title: "MoonXBT",
   description: "MoonXBT - Your Based Content Creator",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/assets/apple-touch-icon.png",
+  },
   appleWebApp: {
     statusBarStyle: "black-translucent",
   },

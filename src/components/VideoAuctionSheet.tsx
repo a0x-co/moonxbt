@@ -1224,10 +1224,10 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
       </div>
 
       <div
-        className="relative z-10 flex w-full flex-1 justify-center overflow-y-auto px-3 pb-4 sm:px-8 md:px-12"
+        className="relative z-10 flex w-full flex-1 items-start justify-center overflow-y-auto px-3 pb-4 sm:px-8 md:px-12"
         onClick={(e) => e.stopPropagation()}
       >
-        <Card className="relative mx-auto max-h-full w-full max-w-3xl overflow-y-auto overscroll-contain border border-white/50 bg-[#f1e4ee]/95 p-4 text-[#1e1730] shadow-2xl sm:p-8">
+        <Card className="relative mx-auto w-full max-w-3xl max-h-[calc(100dvh-96px)] overflow-y-auto overscroll-contain border border-white/50 bg-[#f1e4ee]/95 p-4 text-[#1e1730] shadow-2xl sm:max-h-[calc(100dvh-132px)] sm:p-8">
           <button
             onClick={onClose}
             className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/25 text-3xl font-extrabold text-white shadow-xl backdrop-blur hover:bg-white/35 sm:right-4 sm:top-4 sm:h-16 sm:w-16 sm:text-5xl"
@@ -1561,7 +1561,7 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
                 !isCurrentUserLeadingBidder && (
                   <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     Approval is ready, but your bid is not submitted yet. Click
-                    <span className="font-semibold"> Pay & Continue</span>
+                    <span className="font-semibold"> Pay & Continue </span>
                     to enter the auction.
                   </div>
                 )}

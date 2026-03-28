@@ -1,3 +1,5 @@
+import { getAddress } from "viem";
+
 const CLIENT_ENV = {
   NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS:
     process.env.NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS,
@@ -15,7 +17,7 @@ function requireEnvAddress(name: keyof typeof CLIENT_ENV): `0x${string}` {
   if (!value) {
     throw new Error(`${name} is required`);
   }
-  return value as `0x${string}`;
+  return getAddress(value);
 }
 
 export const AUCTION_CONTRACT_ADDRESS: `0x${string}` = requireEnvAddress(
