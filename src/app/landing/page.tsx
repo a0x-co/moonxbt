@@ -58,8 +58,57 @@ export default function LandingPage() {
 
   // Estado para detalles extendidos del ganador
   const [winnerDetails, setWinnerDetails] = useState<any | null>(null);
+  const [recentWinners, setRecentWinners] = useState<any[]>([]);
   const [loadingWinnerDetails, setLoadingWinnerDetails] = useState(false);
   const [winnerError, setWinnerError] = useState<string | null>(null);
+
+  const formatWinnerBid = (value: unknown): string => {
+    if (value == null || value === "") return "";
+
+    if (typeof value === "bigint") {
+      return `${formatUnits(value, BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`;
+    }
+
+    const raw = String(value).trim();
+    if (!raw) return "";
+
+    if (raw.includes(".")) {
+      return `${raw} ${BID_TOKEN_SYMBOL}`;
+    }
+
+    try {
+      return `${formatUnits(BigInt(raw), BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}`;
+    } catch {
+      return `${raw} ${BID_TOKEN_SYMBOL}`;
+    }
+  };
+
+  const getWinnerVideoUrl = (entry: any): string | null =>
+    (entry?.latestVideo?.jobId
+      ? `/api/moonxbt/video/${entry.latestVideo.jobId}/stream`
+      : null) ||
+    entry?.latestVideo?.videoUrl ||
+    entry?.latestVideo?.previewPublicUrl ||
+    (entry?.latestVideo?.previewBucket && entry?.latestVideo?.previewPath
+      ? `https://storage.googleapis.com/${entry.latestVideo.previewBucket}/${entry.latestVideo.previewPath}`
+      : null);
+
+  const winnerVideoUrl = getWinnerVideoUrl(winnerDetails);
+  const winnersToRender = (
+    recentWinners.length > 0
+      ? recentWinners
+      : winnerDetails
+        ? [winnerDetails]
+        : []
+  )
+    .filter((winner) => {
+      if (currentAuctionId == null) return true;
+      const auctionId = Number(winner?.auctionId ?? NaN);
+      const current = Number(currentAuctionId);
+      if (!Number.isFinite(auctionId) || !Number.isFinite(current)) return true;
+      return auctionId < current;
+    })
+    .sort((a, b) => Number(b?.auctionId ?? 0) - Number(a?.auctionId ?? 0));
 
   // El entryId es auction-{auctionId}-{address}
   // El último auction finalizado es currentAuctionId - 1
@@ -77,7 +126,7 @@ export default function LandingPage() {
     setWinnerError(null);
     axios.get(`/api/moonxbt/auction/entry/${winnerEntryId}`)
       .then(res => {
-        setWinnerDetails(res.data || null);
+        setWinnerDetails(res.data?.entry || res.data || null);
         setLoadingWinnerDetails(false);
       })
       .catch(err => {
@@ -85,6 +134,32 @@ export default function LandingPage() {
         setLoadingWinnerDetails(false);
       });
   }, [winnerEntryId]);
+
+  useEffect(() => {
+    if (!isWinnersOpen || winnersModalTab !== "winners") return;
+
+    let cancelled = false;
+    setLoadingWinnerDetails(true);
+    setWinnerError(null);
+
+    axios
+      .get("/api/moonxbt/auction/winners?limit=10")
+      .then((res) => {
+        if (cancelled) return;
+        const winners = Array.isArray(res.data?.winners) ? res.data.winners : [];
+        setRecentWinners(winners);
+        setLoadingWinnerDetails(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setWinnerError("No se pudieron cargar los winners recientes");
+        setLoadingWinnerDetails(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isWinnersOpen, winnersModalTab]);
 
   const ensureTwitterScript = async () => {
     if (typeof window === "undefined") {
@@ -461,51 +536,66 @@ export default function LandingPage() {
               <TabsContent value="winners" className="m-0">
                 {loadingWinnerDetails ? (
                   <div className="text-center text-white/80">Loading winner details...</div>
-                ) : winnerDetails ? (
+                ) : winnersToRender.length > 0 ? (
                   <div className="space-y-3">
-                    <div className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className={`${press.className} text-[10px] uppercase text-white/80`}>
-                          Latest Winner
-                        </span>
-                        <span className="text-xs md:text-sm font-semibold text-[#ffd34d]">
-                          {winnerDetails.maxBid ? `${formatUnits(BigInt(winnerDetails.maxBid), BID_TOKEN_DECIMALS)} ${BID_TOKEN_SYMBOL}` : ""}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm md:text-base break-all">
-                        {winnerDetails.userAddress ? `${winnerDetails.userAddress.slice(0, 6)}...${winnerDetails.userAddress.slice(-4)}` : ""}
-                      </p>
-                      {winnerDetails.latestVideo?.videoUrl && (
-                        <video
-                          src={winnerDetails.latestVideo.videoUrl}
-                          controls
-                          className="mt-3 w-full rounded-lg border border-white/10"
-                          style={{ maxHeight: 320 }}
-                        />
-                      )}
-                      {winnerDetails.latestVideo?.createdAt && (
-                        <div className="mt-2 text-xs text-white/60">
-                          Date: {new Date(winnerDetails.latestVideo.createdAt).toLocaleString()}
-                        </div>
-                      )}
-                      {winnerDetails.latestScript?.scriptUsed && (
-                        <div className="mt-3 p-2 bg-black/30 rounded text-xs md:text-sm text-white/90 border border-white/10">
-                          <span className="font-bold text-white/70">Script:</span>
-                          <br />
-                          {winnerDetails.latestScript.scriptUsed}
-                        </div>
-                      )}
-                      {winnerDetails.project?.url && (
-                        <a
-                          href={winnerDetails.project.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 inline-block text-xs md:text-sm text-white underline underline-offset-2 hover:text-[#ffd34d]"
+                    {winnersToRender.map((winner, index) => {
+                      const videoUrl = getWinnerVideoUrl(winner);
+                      return (
+                        <div
+                          key={winner.id || `${winner.auctionId}-${winner.userAddress}-${index}`}
+                          className="rounded-lg border border-white/20 bg-[#133db2]/75 p-4"
                         >
-                          View promoted link
-                        </a>
-                      )}
-                    </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className={`${press.className} text-[10px] uppercase text-white/80`}>
+                              {`Auction #${winner.auctionId}`}
+                            </span>
+                            <span className="text-xs md:text-sm font-semibold text-[#ffd34d]">
+                              {formatWinnerBid(winner.maxBid)}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-sm md:text-base break-all">
+                            {winner.userAddress
+                              ? `${winner.userAddress.slice(0, 6)}...${winner.userAddress.slice(-4)}`
+                              : ""}
+                          </p>
+                          {videoUrl && (
+                            <video
+                              src={videoUrl}
+                              controls
+                              className="mt-3 w-full rounded-lg border border-white/10"
+                              style={{ maxHeight: 320 }}
+                            />
+                          )}
+                          {!videoUrl && (
+                            <div className="mt-3 rounded border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/70">
+                              Video unavailable for this auction entry.
+                            </div>
+                          )}
+                          {winner.latestVideo?.createdAt && (
+                            <div className="mt-2 text-xs text-white/60">
+                              Date: {new Date(winner.latestVideo.createdAt).toLocaleString()}
+                            </div>
+                          )}
+                          {winner.latestScript?.scriptUsed && (
+                            <div className="mt-3 rounded border border-white/10 bg-black/30 p-2 text-xs md:text-sm text-white/90">
+                              <span className="font-bold text-white/70">Script:</span>
+                              <br />
+                              {winner.latestScript.scriptUsed}
+                            </div>
+                          )}
+                          {winner.project?.url && (
+                            <a
+                              href={winner.project.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-3 inline-block text-xs md:text-sm text-white underline underline-offset-2 hover:text-[#ffd34d]"
+                            >
+                              View promoted link
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : winnerError ? (
                   <div className="text-center text-red-400">{winnerError}</div>

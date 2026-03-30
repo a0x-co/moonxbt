@@ -1090,9 +1090,15 @@ export function VideoAuctionSheet({ isOpen, onClose }: VideoAuctionSheetProps) {
               previewPath?: string;
             };
           };
+          latestVideo?: {
+            jobId?: string;
+            previewPublicUrl?: string;
+            previewBucket?: string;
+            previewPath?: string;
+          };
         };
 
-        const latestVideo = data.entry?.latestVideo;
+        const latestVideo = data.entry?.latestVideo || data.latestVideo;
         const resolvedUrl =
           (latestVideo?.jobId
             ? `/api/moonxbt/video/${latestVideo.jobId}/stream`
